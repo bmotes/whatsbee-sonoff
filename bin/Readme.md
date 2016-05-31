@@ -1,1 +1,1 @@
-# Como cargar fichero binario en WharsBee-Sonoff
+# Como cargar fichero binario en WhartBee-Sonoff
