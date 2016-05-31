@@ -9,5 +9,5 @@
 7.  Tardará unos segundos, al reiniciar el Sonoff podrás ver la nueva versión de FW. 
 
 ###Me he comprado un Sonoff y lo tengo con el FW original. 
-En esta entrada del blog encontrarás instrucciones (Como pasa el tiempo)[http://blog.whatsbee.net/2016/05/como-pasa-el-tiempo/]
+En esta entrada del blog encontrarás instrucciones -> http://blog.whatsbee.net/2016/05/como-pasa-el-tiempo/
 
