@@ -1,5 +1,5 @@
 # Como cargar fichero binario en WhatsBee-Sonoff
-###Si ya tienes un Sonoff configurado con WhatsBee y quieres actualizarlo
+###Ya tengo un Sonoff configurado con WhatsBee y quiero actualizarlo
 1.  Pulsa el botón durante más de 4 segundos para entrar en el portal de configuración.
 2.  Conectate al AP con nombre WhatsBee-XXXXXXX
 3.  Entra a través del navegador en la dirección 192.168.4.1
