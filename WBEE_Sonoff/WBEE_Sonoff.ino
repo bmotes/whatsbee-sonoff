@@ -4,9 +4,11 @@
 //TODO: cuando se salven nuevas credenciales de wifi en la web hay que poner una marca para que no use las cacheadas.
 //TODO: Despues de la configuración inicial no conecta si no se resetea
 
+//V4.1 Se añade el comando para pedir al nodo que mande la config.
+
 ADC_MODE(ADC_VCC);
 #define HW_VER            "SONOFF"         //VERSION DEL HW
-#define FW_VER            "4.0"            //VERSION DEL FW
+#define FW_VER            "4.1"            //VERSION DEL FW
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 #define CON_SSL           true             //Compilar con TSL/SSL
 #define LED               13               //El led que se va a utilizar para parpadear

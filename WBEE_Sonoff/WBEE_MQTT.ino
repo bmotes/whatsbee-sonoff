@@ -150,6 +150,13 @@ boolean configTopic (String topic, String payload) {
       setNodeMSG("I7: Configurado nodeSleep");
       return true;
     }
+    else if (param == String("getConfig")) {
+      //payload.toCharArray(sysCfg.nodeType, payload.length() + 1);
+      //CFG_Save();
+      sendConfigInfo();
+      setNodeMSG("I8: Solicitada Configuración");
+      return true;
+    }
       /*    else if (param==String("nodeThre")){
             payload=payload.substring(0,4);
             payload.toCharArray(nodeThre, payload.length()+1);
