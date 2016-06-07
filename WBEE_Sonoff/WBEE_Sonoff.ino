@@ -5,12 +5,17 @@
 //TODO: Despues de la configuración inicial no conecta si no se resetea
 
 //V4.1 Se añade el comando para pedir al nodo que mande la config.
+//V4.2 Se normalizan los comandos de configuración
 
 ADC_MODE(ADC_VCC);
-#define HW_VER            "SONOFF"         //VERSION DEL HW
-#define FW_VER            "4.1"            //VERSION DEL FW
-#define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 #define CON_SSL           true             //Compilar con TSL/SSL
+#define HW_VER            "SONOFF"         //VERSION DEL HW
+#if CON_SSL
+  #define FW_VER            "4.2 SSL"            //VERSION DEL FW
+#else
+  #define FW_VER            "4.2"            //VERSION DEL FW
+#endif
+#define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 #define LED               13               //El led que se va a utilizar para parpadear
 #define BUTTON            0                //El botón que se utiliza para entrar en la config
 #define RELE              12               //El Relé
@@ -29,7 +34,7 @@ ADC_MODE(ADC_VCC);
 #define SERIAL_LOG_LEVEL       LOG_LEVEL_DEBUG
 #define SERIAL_IO              true
 
-#define CFG_HOLDER             0x20160312   // Change this value to load default configurations
+#define CFG_HOLDER             0x20160313   // Change this value to load default configurations
 // MQTT
 #define MQTT_SERVER            "www.whatsbee.net"
 #if CON_SSL
@@ -102,9 +107,9 @@ MQTTClient mqttClient;          //Cliente MQTT
 struct SYSCFG {                 //Almacena la configuración
   unsigned long cfg_holder;
   unsigned long saveFlag;
-  byte          seriallog_level;
-  byte          syslog_level;
-  char          syslog_host[32];
+  byte          nodeSerialLogLevel;
+  byte          nodeSysLogLevel ;
+  char          nodeSyslogHost[32];
   char          sta_ssid[32];
   char          sta_pwd[64];
   char          sta_ssid2[32];
@@ -122,10 +127,10 @@ struct SYSCFG {                 //Almacena la configuración
   int8_t        timezone;
   uint8_t       power;
   uint8_t       reboot_setup;
-  double        nodeSendConfigTime;
-  double        nodeSendDataTime;
+  double        nodeSendConfigInterval;
+  double        nodeSendDataInterval ;
   double        nodeSendDataThreshold;
-  int           nodeSleep;
+  int           nodeSleepInterval;
 } sysCfg;
 
 char Hostname[32];          //TODO:Comprobar si hay que borrarlo
@@ -233,35 +238,17 @@ void setup() {
   setupFS(); //Configuracion inicial del sistema de ficheros y el Json
   setupPortal(); //Se conecta a la wifi o inicializa el portal
 
-#if CON_SSL//TODO:Parece lo mismo, comprobar
+//#if CON_SSL//TODO:Parece lo mismo, comprobar
   if (mqttClient.begin(sysCfg.mqtt_server, atoi(sysCfg.mqtt_port), secureClient)) {
-    ledBlink (2, 0.05); // MQTT brokers usually use port 8883 for secure connections
+    ledBlink (2, 0.05); 
   }
-#else
-  if (mqttClient.begin(sysCfg.mqtt_server, atoi(sysCfg.mqtt_port), secureClient)) {
-    ledBlink (2, 0.05); // Sin seguridad
-  }
-#endif
+//#else
+//  if (mqttClient.begin(sysCfg.mqtt_server, atoi(sysCfg.mqtt_port), secureClient)) {
+//    ledBlink (2, 0.05); // Sin seguridad
+//  }
+//#endif
 
   connectMQTT();
-/*  mqttClient.publish(deviceTopic + String("nodeName"), sysCfg.nodeName);
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeType"), sysCfg.nodeType);
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSendConfigTime"), String(sysCfg.nodeSendConfigTime));
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSendDataTime"), String(sysCfg.nodeSendDataTime));
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSendDataThreshold"), String(sysCfg.nodeSendDataThreshold));
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSleep"), String(sysCfg.nodeSleep));
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeHardwareVer"), HW_VER);
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeFirmwareVer"), FW_VER);
-  mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeRunTime"), String(millis()));
-  mqttClient.loop();*/
   sendConfigInfo();
 }
 
@@ -274,7 +261,7 @@ void loop() {
   }
 
   //Se ejecuta periodicamente cada act segundos
-    if(millis() - lastConfigTime > sysCfg.nodeSendConfigTime) {
+    if(millis() - lastConfigTime > sysCfg.nodeSendConfigInterval) {
       char log[80];
       lastConfigTime = millis();
       sprintf_P(log, PSTR("MQTT: Enviada info de configuración"));
@@ -283,7 +270,7 @@ void loop() {
       }
 
   //Se ejecuta periodicamente cada act segundos
-    if(millis() - lastDataTime > sysCfg.nodeSendDataTime) {
+    if(millis() - lastDataTime > sysCfg.nodeSendDataInterval ) {
       char log[80];
       lastDataTime = millis();
       sprintf_P(log, PSTR("MQTT: Enviado el Topic de datos"));

@@ -53,9 +53,8 @@ void messageReceived(String topic, String payload, char * bytes, unsigned int le
   }
 }
 
-//*********************************MQTT***************************************
 boolean configTopic (String topic, String payload) {
-  char log[160];
+  char log[80];
   payload = payload.substring(0, 30); //limita el número de carácteres
   if (topic.startsWith(deviceTopic, 0)) { //es un parámetro de configuración
     String param = topic;
@@ -63,38 +62,38 @@ boolean configTopic (String topic, String payload) {
     sprintf_P(log, PSTR("MQTT: Recibido Config Topic \"%s\" = %s"), topic.c_str(), payload.c_str());
     addLog(LOG_LEVEL_DEBUG, log);
 
-    if (param == String("nodeName")) {
+    if (param == String("sNodeName")) {
       payload.toCharArray(sysCfg.nodeName, payload.length() + 1);
       CFG_Save();
       setNodeMSG("I1: Configurado nodeName");
       return true;
     }
-    else if (param == String("nodeType")) {
+    else if (param == String("gNodeType")) {
       payload.toCharArray(sysCfg.nodeType, payload.length() + 1);
       CFG_Save();
       setNodeMSG("I2: Configurado nodeType");
       return true;
     }
-    else if (param == String("seriallog_level")) {
+    else if (param == String("sNodeSerialLogLevel")) {
       char strVal[4];
       payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.seriallog_level = atoi(strVal);
+      sysCfg.nodeSerialLogLevel = atoi(strVal);
       CFG_Save();
-      setNodeMSG("I3: Configurado seriallog_level");
+      setNodeMSG("I3: Configurado sNodeSerialLogLevel");
       return true;
     }
-    else if (param == String("syslog_level")) {
+    else if (param == String("sNodeSysLogLevel")) {
       char strVal[4];
       payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.syslog_level = atoi(strVal);
+      sysCfg.nodeSysLogLevel  = atoi(strVal);
       CFG_Save();
-      setNodeMSG("I4: Configurado seriallog_level");
+      setNodeMSG("I4: Configurado sNodeSysLogLevel");
       return true;
     }
-    else if (param == String("syslog_host")) {
-      payload.toCharArray(sysCfg.syslog_host, payload.length() + 1);
+    else if (param == String("sNodeSyslogHost")) {
+      payload.toCharArray(sysCfg.nodeSyslogHost, payload.length() + 1);
       CFG_Save();
-      setNodeMSG("I5: Configurado syslog_host");
+      setNodeMSG("I5: Configurado sNodeSyslogHost");
       return true;
     }
     else if (param == String("reboot_setup")) {
@@ -105,79 +104,59 @@ boolean configTopic (String topic, String payload) {
       setNodeMSG("I6: Configurado reboot_setup");
       return true;
     }
-    else if (param == String("nodeSendConfigTime")) {
+    else if (param == String("sNodeSendConfigInterval")) {
       char strVal[4];
       payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSendConfigTime = atoi(strVal);
-      if (sysCfg.nodeSendConfigTime<60000){sysCfg.nodeSendConfigTime=60000;}
+      sysCfg.nodeSendConfigInterval = atoi(strVal);
+      if (sysCfg.nodeSendConfigInterval<60000){sysCfg.nodeSendConfigInterval=60000;}
       CFG_Save();
-      setNodeMSG("I7: Configurado nodeSendConfigTime");
+      setNodeMSG("I7: Configurado sNodeSendConfigInterval");
       return true;
     }
-    else if (param == String("nodeSendDataTime")) {
+    else if (param == String("sNodeSendDataInterval")) {
       char strVal[4];
       payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSendDataTime = atoi(strVal);
-      if (sysCfg.nodeSendDataTime<1000){sysCfg.nodeSendDataTime=1000;}
+      sysCfg.nodeSendDataInterval  = atoi(strVal);
+      if (sysCfg.nodeSendDataInterval <1000){sysCfg.nodeSendDataInterval =1000;}
       CFG_Save();
-      setNodeMSG("I7: Configurado nodeSendDataTime");
+      setNodeMSG("I7: Configurado sNodeSendDataInterval");
       return true;
     }
-    else if (param == String("nodeSendDataThreshold")) {
+    else if (param == String("sNodeSendDataThreshold")) {
       char strVal[4];
       payload.toCharArray(strVal, payload.length() + 1);
       sysCfg.nodeSendDataThreshold = atoi(strVal);
       if (sysCfg.nodeSendDataThreshold<0){sysCfg.nodeSendDataThreshold=0;}
       CFG_Save();
-      setNodeMSG("I7: Configurado nodeSendDataThreshold");
+      setNodeMSG("I7: Configurado sNodeSendDataThreshold");
       return true;
     }
-    else if (param == String("nodeSleep")) {
+    else if (param == String("sNodeSleepInterval")) {
       char strVal[4];
       payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSleep = atoi(strVal);
-      if (sysCfg.nodeSleep<0){sysCfg.nodeSleep=0;}
+      sysCfg.nodeSleepInterval = atoi(strVal);
+      if (sysCfg.nodeSleepInterval<0){sysCfg.nodeSleepInterval=0;}
       CFG_Save();
-      setNodeMSG("I7: Configurado nodeSleep");
+      setNodeMSG("I7: Configurado sNodeSleepInterval");
       return true;
     }
-    else if (param == String("nodeSleep")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSleep = atoi(strVal);
-      if (sysCfg.nodeSleep<0){sysCfg.nodeSleep=0;}
-      CFG_Save();
-      setNodeMSG("I7: Configurado nodeSleep");
+    else if (param == String("cReset")) {
+      setNodeMSG("I8: Solicitado Reset por MQTT");
+      ESP.reset();
       return true;
     }
-    else if (param == String("getConfig")) {
-      //payload.toCharArray(sysCfg.nodeType, payload.length() + 1);
-      //CFG_Save();
+    else if (param == String("cPubConfig")) {
       sendConfigInfo();
-      setNodeMSG("I8: Solicitada Configuración");
+      setNodeMSG("I9: Solicitada Configuración");
       return true;
     }
-      /*    else if (param==String("nodeThre")){
-            payload=payload.substring(0,4);
-            payload.toCharArray(nodeThre, payload.length()+1);
-            if (atoi(nodeThre)!=0){
-              thre=atoi(nodeThre);
-              //TODO: ver como hacemos para que guarde saveParametersToFS ();
-              setNodeMSG("I4: Configurado nodeThre");
-              }
-              else{
-              setNodeMSG("E3: nodeThre no es un numero");
-              }
-            return true;
-          }
-        else if (param==String("nodeMSG")|| param==String("nodeMillis")){
-            //No hace nada para no entrar en un bucle, es un mensaje o los millis
-            return true;
-          }
-        else{
-          setNodeMSG("E1: Configuración desconocida");
-        return true;//Lo que ha llegado es un parametro de config incorrecto.
-          }*/
+    else if (param == String("cResetPortal")) {
+      setNodeMSG("IA: Solicitado Reset con config");
+      sysCfg.reboot_setup = 1;
+      CFG_Save();
+      ESP.reset();
+      return true;
+    }
   }
   else {
     return false;//Lo que ha llegado no es un parametro de config.
@@ -203,26 +182,43 @@ int getInterval (String payload) {
 }
 
 void sendConfigInfo(){
-  mqttClient.publish(deviceTopic + String("nodeName"), sysCfg.nodeName);
+  mqttClient.publish(deviceTopic + String("sNodeName"), sysCfg.nodeName);
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeType"), sysCfg.nodeType);
+  mqttClient.publish(deviceTopic + String("gNodeType"), sysCfg.nodeType);
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSendConfigTime"), String(sysCfg.nodeSendConfigTime));
+  mqttClient.publish(deviceTopic + String("sNodeSendConfigInterval"), String(sysCfg.nodeSendConfigInterval));
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSendDataTime"), String(sysCfg.nodeSendDataTime));
+  mqttClient.publish(deviceTopic + String("sNodeSendDataInterval"), String(sysCfg.nodeSendDataInterval ));
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSendDataThreshold"), String(sysCfg.nodeSendDataThreshold));
+  mqttClient.publish(deviceTopic + String("sNodeSendDataThreshold"), String(sysCfg.nodeSendDataThreshold));
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeSleep"), String(sysCfg.nodeSleep));
+  mqttClient.publish(deviceTopic + String("sNodeSleepInterval"), String(sysCfg.nodeSleepInterval));
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeHardwareVer"), HW_VER);
+  mqttClient.publish(deviceTopic + String("gNodeHardwareVer"), HW_VER);
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeFirmwareVer"), FW_VER);
+  mqttClient.publish(deviceTopic + String("gNodeFirmwareVer"), FW_VER);
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeRunTime"), String(millis()));
+  mqttClient.publish(deviceTopic + String("gNodeRuntime"), String(millis()));
   mqttClient.loop();
-  mqttClient.publish(deviceTopic + String("nodeVoltaje"), String(ESP.getVcc()/1024.00f));
+  mqttClient.publish(deviceTopic + String("gNodeVoltaje"), String(ESP.getVcc()/1024.00f));
   mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("sNodeSyslogHost"), sysCfg.nodeSyslogHost);
+  mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("sNodeSysLogLevel"), String(sysCfg.nodeSysLogLevel ));
+  mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("gNodeVoltaje"), String(sysCfg.nodeSerialLogLevel));
+  //Adicionales, ver si finalmente los incluimos o no
+  mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("eMQTTTopic"), sysCfg.mqtt_topic);
+  mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("eMQTTserver"), sysCfg.mqtt_server);
+  mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("eMQTTPort"), sysCfg.mqtt_port);
+  mqttClient.loop();
+  mqttClient.publish(deviceTopic + String("eMQTTUser"), sysCfg.mqtt_user);
+  mqttClient.loop();
+  //mqttClient.publish(deviceTopic + String("pMQTTPassword"), sysCfg.mqtt_password);
+  //mqttClient.loop();
 }
-//*********************************MQTT***************************************
+
 

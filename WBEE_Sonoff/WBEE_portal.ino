@@ -30,8 +30,15 @@ const char WB_FORM_UPLOAD[] PROGMEM = "<form method='POST' action='/update' enct
 const char WB_UPGRADE_OK[] PROGMEM = "Se ha completado la actualización de firmware, el dispositivo arrancará de nuevo en menos de un minuto.<script>setTimeout(function(){ window.location.href='http://192.168.4.1';}, 6000);</script>";
 const char WB_CIERRE_DIV[] PROGMEM = "</div>";
 
+boolean       connect;
+boolean       endUpload = false;//arreglar
+unsigned long timeout = TIMEOUT;
+unsigned long start = 0;
+String        contenido;
+
+
 //predeclaracion de funciones
-void          handleWifi();
+/*void          handleWifi();
 void          handleWifiSave();
 void          handleReset();
 void          handleNotFound();
@@ -49,14 +56,10 @@ boolean        isIp(String str);
 String        toStringIp(IPAddress ip);
 int           getRSSIasQuality(int RSSI);
 boolean       captivePortal();
-unsigned long timeout = TIMEOUT;
-unsigned long start = 0;
 int           _minimumQuality = -1;
-boolean       connect;
 boolean       _debug = true; //arreglar despues
-boolean       endUpload = false;//arreglar
-String        contenido;
 
+*/
 int autoConnect (char const *apName, char const *apPassword) {
   //Primer intento de conectar con las credenciales almacenadas
   char log[80];
@@ -100,51 +103,6 @@ int autoConnect (char const *apName, char const *apPassword) {
   }
 }
 
-/*boolean WiFi_autoConnect(char const *apName, char const *apPassword) {
-  // attempt to connect; should it fail, fall back to AP
-  WiFi.mode(WIFI_STA);
-  //BORRAR Serial.println ("Wifi autoconnect ha entrado");
-  if (connectWifi("", "") == WL_CONNECTED) {
-    Serial.println("Se ha conectado sin usuario ni password");
-    return true;
-  }
-  else if (connectWifi(sysCfg.sta_ssid, sysCfg.sta_pwd) == WL_CONNECTED)   {
-    char log[80];
-    char ip[16];
-    strcpy (ip, toStringIp(WiFi.localIP()).c_str());
-    sprintf_P(log, PSTR("Portal: IP Address; %s"), ip);
-    addLog(LOG_LEVEL_INFO, log);
-    ledBlink (1, 0.05);
-    return true;
-  }
-
-  return startConfigPortal(apName, apPassword);
-}
-
-
-int connectWifi(String ssid, String pass) {
-  //BORRAR Serial.println ("Wifi connectWifi ha entrado");
-  char log[80];
-  //TODO: Borrar el password de aqui.
-  sprintf_P(log, PSTR("Portal: Connecting as wifi client; %s / %s"), ssid.c_str(), pass.c_str());
-  addLog(LOG_LEVEL_INFO, log);
-  //TODO:Mira lo de la conexión sin pasar params para ver si ahorramos tiempo en el arranque
-  if (ssid != "" && pass != "") {
-    WiFi.begin(ssid.c_str(), pass.c_str());
-  } else {
-    addLog(LOG_LEVEL_DEBUG, "Portal: Using last saved values, should be faster");
-    WiFi.begin();
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-    }
-
-  }
-  int connRes = WiFi.waitForConnectResult();
-  sprintf_P(log, PSTR("Portal: Connection result: %d"), connRes);
-  addLog(LOG_LEVEL_INFO, log);
-  return connRes;
-}*/
 
 boolean  startConfigPortal(char const *apName, char const *apPassword) {//Inicia el Config Portal
   WiFi.mode(WIFI_AP);
@@ -261,7 +219,7 @@ void handleWifi() {
         //        DEBUG_WM("SSID-> " + WiFi.SSID(i) + " " + WiFi.RSSI(i) + " dB");
         int quality = getRSSIasQuality(WiFi.RSSI(i));
 
-        if (_minimumQuality == -1 || _minimumQuality < quality) {
+//        if (_minimumQuality == -1 || _minimumQuality < quality) {
 
           String item = FPSTR(WB_FORM_WIFI);
           String rssiQ;
@@ -277,11 +235,11 @@ void handleWifi() {
           contenido += item;
           //server.sendContent(item);
           delay(0);
-        }
-        else {
-          sprintf_P(log, PSTR("Portal: Skipping due to quality"));
-          addLog(LOG_LEVEL_DEBUG, log);
-        }
+ //       }
+ //       else {
+ //         sprintf_P(log, PSTR("Portal: Skipping due to quality"));
+ //         addLog(LOG_LEVEL_DEBUG, log);
+ //       }
 
       }
       sprintf_P(log, PSTR("Portal: Enviando lista WIFIS"));
@@ -300,7 +258,6 @@ void handleWifi() {
   sprintf_P(log, PSTR("Portal: Enviado inicio del form"));
   addLog(LOG_LEVEL_DEBUG_MORE, log);
 
-  //server.sendContent ("<Label><a href='#' onclick=\"if(document.getElementById('wifiadv').style.display=='none'){document.getElementById('wifiadv').style.display='block';}else{document.getElementById('wifiadv').style.display='none';}if(document.getElementById('cfgadv').style.display=='none'){document.getElementById('cfgadv').style.display='block';}else{document.getElementById('cfgadv').style.display='none';}\">Configuración avanzada</a></Label>");
   server.sendContent ("<div id='wifiadv' style='display:none'>");
   contenido = FPSTR(WB_INPUT_WIFI2);
   contenido.replace("{v}", sysCfg.sta_ssid2);
@@ -360,55 +317,73 @@ void handleWifi() {
   server.sendContent("<div id='cfgadv' style='display:none'>");
   //Esto es para la config avanzada**************************************************
   server.sendContent_P(WB_FORM_ADV);
+
   contenido = FPSTR(WB_FORM_PARAM);
-  contenido.replace("{i}", "sysh");
-  contenido.replace("{n}", "sysh");
+  contenido.replace("{i}", "sNodeName");
+  contenido.replace("{n}", "sNodeName");
+  contenido.replace("{t}", "text");
+  contenido.replace("{p}", "Nombre del nodo");
+  contenido.replace("{v}", sysCfg.nodeName);
+  server.sendContent(contenido);
+
+  contenido = FPSTR(WB_FORM_PARAM);
+  contenido.replace("{i}", "sNodeSyslogHost");
+  contenido.replace("{n}", "sNodeSyslogHost");
   contenido.replace("{t}", "text");
   contenido.replace("{p}", "Syslog Host");
-  contenido.replace("{v}", sysCfg.syslog_host);
+  contenido.replace("{v}", sysCfg.nodeSyslogHost);
   server.sendContent(contenido);
 
   contenido = FPSTR(WB_FORM_PARAM_LOG);
-  contenido.replace("{i}", "sysl");
-  contenido.replace("{n}", "sysl");
+  contenido.replace("{i}", "sNodeSysLogLevel");
+  contenido.replace("{n}", "sNodeSysLogLevel");
   //contenido.replace("{t}", "text");
   contenido.replace("{p}", "Syslog Level");
-  contenido.replace("{v}", String(sysCfg.syslog_level));
+  contenido.replace("{v}", String(sysCfg.nodeSysLogLevel ));
   server.sendContent(contenido);
 
   contenido = FPSTR(WB_FORM_PARAM_LOG);
-  contenido.replace("{i}", "serl");
-  contenido.replace("{n}", "serl");
+  contenido.replace("{i}", "sNodeSerialLogLevel");
+  contenido.replace("{n}", "sNodeSerialLogLevel");
   //contenido.replace("{t}", "text");
-  contenido.replace("{p}", "Serial level");
-  contenido.replace("{v}", String(sysCfg.seriallog_level));
+  contenido.replace("{p}", "Serial Log level");
+  contenido.replace("{v}", String(sysCfg.nodeSerialLogLevel));
   server.sendContent(contenido);
 
   contenido = FPSTR(WB_FORM_PARAM_NUMBER);
-  contenido.replace("{i}", "nsct");
-  contenido.replace("{n}", "nsct");
+  contenido.replace("{i}", "sNodeSendConfigInterval");
+  contenido.replace("{n}", "sNodeSendConfigInterval");
   contenido.replace("{t}", "number");
   contenido.replace("{r}", "min='60000'");
-  contenido.replace("{p}", "Send Config Time");
-  contenido.replace("{v}", String(sysCfg.nodeSendConfigTime));
+  contenido.replace("{p}", "Send Config Interval (ms)");
+  contenido.replace("{v}", String(sysCfg.nodeSendConfigInterval));
   server.sendContent(contenido);
 
   contenido = FPSTR(WB_FORM_PARAM_NUMBER);
-  contenido.replace("{i}", "nsdt");
-  contenido.replace("{n}", "nsdt");
+  contenido.replace("{i}", "sNodeSendDataInterval");
+  contenido.replace("{n}", "sNodeSendDataInterval");
   contenido.replace("{t}", "number");
   contenido.replace("{r}", "min='1000'");
-  contenido.replace("{p}", "Send Data Time");
-  contenido.replace("{v}", String(sysCfg.nodeSendDataTime));
+  contenido.replace("{p}", "Send Data Interval (ms)");
+  contenido.replace("{v}", String(sysCfg.nodeSendDataInterval ));
   server.sendContent(contenido);
 
   contenido = FPSTR(WB_FORM_PARAM_NUMBER);
-  contenido.replace("{i}", "nsdh");
-  contenido.replace("{n}", "nsdh");
+  contenido.replace("{i}", "sNodeSendDataThreshold");
+  contenido.replace("{n}", "sNodeSendDataThreshold");
   contenido.replace("{t}", "number");
   contenido.replace("{r}", "min='0' max='100'");
   contenido.replace("{p}", "Send Data Threshold");
   contenido.replace("{v}", String(sysCfg.nodeSendDataThreshold));
+  server.sendContent(contenido);
+
+  contenido = FPSTR(WB_FORM_PARAM_NUMBER);
+  contenido.replace("{i}", "sNodeSleepInterval");
+  contenido.replace("{n}", "sNodeSleepInterval");
+  contenido.replace("{t}", "number");
+  contenido.replace("{r}", "min='0' max='10000'");
+  contenido.replace("{p}", "Send Sleep Interval (s)");
+  contenido.replace("{v}", String(sysCfg.nodeSleepInterval));
   server.sendContent(contenido);
 
 
@@ -506,26 +481,32 @@ void handleWifiSave() {
 
   value = urldecode(server.arg("mtpc").c_str());
   value.toCharArray(sysCfg.mqtt_topic, value.length() + 1);
+  
+  value = urldecode(server.arg("sNodeName").c_str());
+  value.toCharArray(sysCfg.nodeName, value.length() + 1);
 
-  value = urldecode(server.arg("sysh").c_str());
-  value.toCharArray(sysCfg.syslog_host, value.length() + 1);
+  value = urldecode(server.arg("sNodeSyslogHost").c_str());
+  value.toCharArray(sysCfg.nodeSyslogHost, value.length() + 1);
 
-  value = urldecode(server.arg("sysl").c_str());
-  sysCfg.syslog_level = atoi(value.c_str());
+  value = urldecode(server.arg("sNodeSysLogLevel").c_str());
+  sysCfg.nodeSysLogLevel  = atoi(value.c_str());
 
-  value = urldecode(server.arg("serl").c_str());
-  sysCfg.seriallog_level = atoi(value.c_str());
+  value = urldecode(server.arg("sNodeSerialLogLevel").c_str());
+  sysCfg.nodeSerialLogLevel = atoi(value.c_str());
 
-  value = urldecode(server.arg("nsct").c_str());
-  sysCfg.nodeSendConfigTime = atoi(value.c_str());
-if (sysCfg.nodeSendConfigTime<60000){sysCfg.nodeSendConfigTime=60000;}
+  value = urldecode(server.arg("sNodeSendConfigInterval").c_str());
+  sysCfg.nodeSendConfigInterval = atoi(value.c_str());
+if (sysCfg.nodeSendConfigInterval<60000){sysCfg.nodeSendConfigInterval=60000;}
 
-  value = urldecode(server.arg("nsdt").c_str());
-  sysCfg.nodeSendDataTime = atoi(value.c_str());
-  if (sysCfg.nodeSendDataTime<1000){sysCfg.nodeSendDataTime=1000;}
+  value = urldecode(server.arg("sNodeSendDataInterval").c_str());
+  sysCfg.nodeSendDataInterval  = atoi(value.c_str());
+  if (sysCfg.nodeSendDataInterval <1000){sysCfg.nodeSendDataInterval =1000;}
 
-    value = urldecode(server.arg("nsdh").c_str());
+  value = urldecode(server.arg("sNodeSendDataThreshold").c_str());
   sysCfg.nodeSendDataThreshold = atoi(value.c_str());
+
+  value = urldecode(server.arg("sNodeSleepInterval").c_str());
+  sysCfg.nodeSleepInterval = atoi(value.c_str());
 
 
   sysCfg.reboot_setup = 0;
@@ -558,44 +539,6 @@ if (sysCfg.nodeSendConfigTime<60000){sysCfg.nodeSendConfigTime=60000;}
   //TODO: Como hacemos un reset mejor mirar si eliminamos todo el tema del connect
   //connect = true; //signal ready to connect/reset
 }
-
-/** Handle the info page */
-/*void handleInfo() {
-  //DEBUG_WM(F("Info"));
-  addLog(LOG_LEVEL_DEBUG, "Portal: Handle Info");
-
-  String contenido = FPSTR(WB_HEAD);
-  contenido.replace("{v}", "Info");
-  contenido += FPSTR(WB_SCRIPT);
-  contenido += FPSTR(WB_STYLE);
-  contenido += FPSTR(HTTP_HEAD_END);
-  contenido += F("<dl>");
-  contenido += F("<dt>Chip ID</dt><dd>");
-  contenido += ESP.getChipId();
-  contenido += F("</dd>");
-  contenido += F("<dt>Flash Chip ID</dt><dd>");
-  contenido += ESP.getFlashChipId();
-  contenido += F("</dd>");
-  contenido += F("<dt>Flash Size</dt><dd>");
-  contenido += ESP.getFlashChipSize();
-  contenido += F(" bytes</dd>");
-  contenido += F("<dt>Soft AP IP</dt><dd>");
-  contenido += WiFi.softAPIP().toString();
-  contenido += F("</dd>");
-  contenido += F("<dt>Soft AP MAC</dt><dd>");
-  contenido += WiFi.softAPmacAddress();
-  contenido += F("</dd>");
-  contenido += F("<dt>Station MAC</dt><dd>");
-  contenido += WiFi.macAddress();
-  contenido += F("</dd>");
-  contenido += F("</dl>");
-  contenido += FPSTR(HTTP_END);
-
-  server.send(200, "text/html", contenido);
-
-  //DEBUG_WM(F("Sent info page"));
-  addLog(LOG_LEVEL_DEBUG, "Portal:fin Handle Info");
-  }*/
 
 /** Handle the reset page */
 void handleReset() {
@@ -683,13 +626,13 @@ void handleUpload() {//OTA
     addLog(LOG_LEVEL_INFO, log);
     uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
     if (!Update.begin(maxSketchSpace)) { //start with max available size
-      if (_debug) Update.printError(Serial); //TODO: mirar que hacemos con esto del debug
+      if (sysCfg.nodeSerialLogLevel!=0) Update.printError(Serial); //TODO: mirar que hacemos con esto del debug
     }
   }
   else if (upload.status == UPLOAD_FILE_WRITE) {
-    if (_debug) Serial.printf(".");
+    if (sysCfg.nodeSerialLogLevel!=0) Serial.printf(".");
     if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
-      if (_debug) Update.printError(Serial);
+      if (sysCfg.nodeSerialLogLevel!=0) Update.printError(Serial);
 
     }
   }
@@ -702,7 +645,7 @@ void handleUpload() {//OTA
       endUpload = true;
     }
     else {
-      if (_debug) Update.printError(Serial);
+      if (sysCfg.nodeSerialLogLevel!=0) Update.printError(Serial);
     }
     //if (_serial_output)
     Serial.setDebugOutput(false);
@@ -716,14 +659,6 @@ void handleUpload() {//OTA
   }
   delay(0);
 }
-
-/*void handle204() {
-  DEBUG_WM(F("204 No Response"));
-  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server.sendHeader("Pragma", "no-cache");
-  server.sendHeader("Expires", "-1");
-  server.send ( 204, "text/plain", "");
-  }*/
 
 void handleNotFound() {
   char log[80];
@@ -751,7 +686,6 @@ void handleNotFound() {
   server.sendHeader("Expires", "-1");
   server.send ( 404, "text/plain", message );
 }
-//********************************************************************************************************************
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
 boolean captivePortal() {
@@ -778,12 +712,6 @@ if (!isIp(server.hostHeader())) {
   String head = FPSTR(WB_HEAD);
   head.replace("{v}", "Config ESP");
   server.sendContent(head);
-
-
-
-
-
-    
     return true;
   }
   return false;
@@ -857,13 +785,5 @@ String toStringIp(IPAddress ip) {
   res += String(((ip >> 8 * 3)) & 0xFF);
   return res;
 }
-
-/*
-  void DEBUG_WM(String text) {
-  if (_debug) {
-    Serial.print("*WM: " + String(millis()) + ": ");
-    Serial.println(text);
-  }
-  }*/
 
 

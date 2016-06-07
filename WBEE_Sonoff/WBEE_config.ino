@@ -34,9 +34,9 @@ void CFG_Default()
   memset(&myCfg, 0x00, sizeof(SYSCFG));//borra el contenido del array
   sysCfg.cfg_holder = CFG_HOLDER;
   sysCfg.saveFlag = 0;
-  sysCfg.seriallog_level = SERIAL_LOG_LEVEL;
-  sysCfg.syslog_level = SYS_LOG_LEVEL;
-  strcpy(sysCfg.syslog_host, SYS_LOG_HOST);
+  sysCfg.nodeSerialLogLevel = SERIAL_LOG_LEVEL;
+  sysCfg.nodeSysLogLevel  = SYS_LOG_LEVEL;
+  strcpy(sysCfg.nodeSyslogHost, SYS_LOG_HOST);
   strcpy(sysCfg.sta_ssid, STA_SSID);
   strcpy(sysCfg.sta_pwd, STA_PASS);
   strcpy(sysCfg.sta_ssid2, "");
@@ -54,10 +54,10 @@ void CFG_Default()
   sysCfg.timezone = APP_TIMEZONE;
   sysCfg.power = APP_POWER;
   sysCfg.reboot_setup = 1;
-  sysCfg.nodeSendConfigTime = SEND_CONFIG_TIME;
-  sysCfg.nodeSendDataTime = SEND_DATA_TIME;
+  sysCfg.nodeSendConfigInterval = SEND_CONFIG_TIME;
+  sysCfg.nodeSendDataInterval  = SEND_DATA_TIME;
   sysCfg.nodeSendDataThreshold = SEND_DATA_THRESHOLD;
-  sysCfg.nodeSleep = NODE_SLEEP;
+  sysCfg.nodeSleepInterval = NODE_SLEEP;
 
 
   //BORRAR  Serial.print ("Justo antes de guardar sysCfg: ");
@@ -90,7 +90,7 @@ void CFG_Erase()
 
   uint32_t _sectorStart = (ESP.getSketchSize() / SPI_FLASH_SEC_SIZE) + 1;
   uint32_t _sectorEnd = ESP.getFlashChipRealSize() / SPI_FLASH_SEC_SIZE;
-  byte seriallog_level = sysCfg.seriallog_level;
+  byte nodeSerialLogLevel = sysCfg.nodeSerialLogLevel;
 
   sprintf_P(log, PSTR("Config: Erasing %d flash sectors"), _sectorEnd - _sectorStart);
   addLog(LOG_LEVEL_DEBUG, log);
@@ -99,7 +99,7 @@ void CFG_Erase()
     noInterrupts();
     result = spi_flash_erase_sector(_sector);
     interrupts();
-    if (LOG_LEVEL_DEBUG_MORE <= seriallog_level) {
+    if (LOG_LEVEL_DEBUG_MORE <= nodeSerialLogLevel) {
       Serial.print(F("Flash: Erased sector "));
       Serial.print(_sector);
       if (result == SPI_FLASH_RESULT_OK)
@@ -117,9 +117,9 @@ void CFG_Print()
   Serial.println("***************SYSCFG*************************");
   Serial.print ("sysCfg.cfg_holder: "); Serial.println(sysCfg.cfg_holder);
   Serial.print ("sysCfg.saveFlag: "); Serial.println(sysCfg.saveFlag);
-  Serial.print ("sysCfg.seriallog_level: "); Serial.println(sysCfg.seriallog_level);
-  Serial.print ("sysCfg.syslog_level: "); Serial.println(sysCfg.syslog_level);
-  Serial.print ("sysCfg.syslog_host: "); Serial.println(sysCfg.syslog_host);
+  Serial.print ("sysCfg.nodeSerialLogLevel: "); Serial.println(sysCfg.nodeSerialLogLevel);
+  Serial.print ("sysCfg.nodeSysLogLevel : "); Serial.println(sysCfg.nodeSysLogLevel );
+  Serial.print ("sysCfg.nodeSyslogHost: "); Serial.println(sysCfg.nodeSyslogHost);
   Serial.print ("sysCfg.sta_ssid: "); Serial.println(sysCfg.sta_ssid);
   Serial.print ("sysCfg.sta_pwd: "); Serial.println(sysCfg.sta_pwd);
   Serial.print ("sysCfg.sta_ssid2: "); Serial.println(sysCfg.sta_ssid2);
@@ -137,10 +137,10 @@ void CFG_Print()
   Serial.print ("sysCfg.timezone: "); Serial.println(sysCfg.timezone);
   Serial.print ("sysCfg.power: "); Serial.println(sysCfg.power);
   Serial.print ("sysCfg.reboot_setup: "); Serial.println(sysCfg.reboot_setup);
-  Serial.print ("sysCfg.nodeSendConfigTime: "); Serial.println(sysCfg.nodeSendConfigTime);
-  Serial.print ("sysCfg.nodeSendDataTime: "); Serial.println(sysCfg.nodeSendDataTime);
+  Serial.print ("sysCfg.nodeSendConfigInterval: "); Serial.println(sysCfg.nodeSendConfigInterval);
+  Serial.print ("sysCfg.nodeSendDataInterval : "); Serial.println(sysCfg.nodeSendDataInterval );
   Serial.print ("sysCfg.nodeSendDataThreshold: "); Serial.println(sysCfg.nodeSendDataThreshold);
-  Serial.print ("sysCfg.nodeSleep: "); Serial.println(sysCfg.nodeSleep);
+  Serial.print ("sysCfg.nodeSleepInterval: "); Serial.println(sysCfg.nodeSleepInterval);
   Serial.println("***************SYSCFG*************************");
 }
 
