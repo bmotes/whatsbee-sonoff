@@ -71,7 +71,7 @@ void setupFS() {
   //CFG_Erase();//Solo para diagnóctico
   CFG_Load();
   String autoSSID = (String ("WhatsBee-") + String(ESP.getChipId()));
-  deviceTopic = String("$DEV/") + String(sysCfg.mqtt_user) + String("/") + String(ESP.getChipId()) + String("/");
+  deviceTopic = String("$DEV/") + String(sysCfg.MQTTUser) + String("/") + String(ESP.getChipId()) + String("/");
   autoSSID.toCharArray (autoSSID_name, 20);
 
   if (sysCfg.reboot_setup) { //Se marcó para activar el portal en el proximo reset
@@ -84,14 +84,14 @@ void setupFS() {
 void setupPortal() {
 
   //  if (!WiFi_autoConnect(autoSSID_name, autoSSID_password)) {
-  if (sysCfg.sta_ssid != "") {
-    wifiMulti.addAP(sysCfg.sta_ssid, sysCfg.sta_pwd);
+  if (sysCfg.WifiSSID1 != "") {
+    wifiMulti.addAP(sysCfg.WifiSSID1, sysCfg.WifiPassword);
   }
-  if (sysCfg.sta_ssid2 != "") {
-    wifiMulti.addAP(sysCfg.sta_ssid2, sysCfg.sta_pwd2);
+  if (sysCfg.WifiSSID2 != "") {
+    wifiMulti.addAP(sysCfg.WifiSSID2, sysCfg.WifiPassword2);
   }
-  if (sysCfg.sta_ssid3 != "") {
-    wifiMulti.addAP(sysCfg.sta_ssid3, sysCfg.sta_pwd3);
+  if (sysCfg.WifiSSID3 != "") {
+    wifiMulti.addAP(sysCfg.WifiSSID3, sysCfg.WifiPassword3);
   }
   if (!autoConnect(autoSSID_name, autoSSID_password)) {
     Serial.println(F("fallo de conexión"));
