@@ -18,8 +18,8 @@ const char WB_INPUT_WIFI3[] PROGMEM = "<label>SSID (backup 2)<input id='sWifiSSI
 const char WB_FORM_BROKER[] PROGMEM = "<div class='sc'><span>2</span>Configuracion del broker</div><div class='iw'>";
 const char WB_FORM_ADV[] PROGMEM = "<div class='sc'><span>3</span>Configuracion avanzada</div><div class='iw'>";
 const char WB_FORM_PARAM[] PROGMEM = "<label>{p}<input id='{i}' type='{t}' name='{n}' value='{v}' /></label>";
-const char WB_FORM_PARAM_LOG[] PROGMEM ="<label>{p}<select id='{i}' name='{n}' value='{v}'><option value='0'>None</option><option value='1'>Error</option><option value='2'>Info</option><option value='3'>Log</option><option value='4'>More log</option></select></label>";
-const char WB_FORM_PARAM_SINO[] PROGMEM ="<label>{p}<select id='{i}' name='{n}' value='{v}'><option value='0'>No</option><option value='1'>Sí</option></select></label>";
+const char WB_FORM_PARAM_LOG[] PROGMEM ="<label>{p}<select id='{i}' name='{n}'><option value='0'>None</option><option value='1'>Error</option><option value='2'>Info</option><option value='3'>Log</option><option value='4'>More log</option></select></label><script>document.getElementById(\"{i}\").value=\"{v}\";</script>";
+const char WB_FORM_PARAM_SINO[] PROGMEM ="<label>{p}<select id='{i}' name='{n}'><option value='0'>No</option><option value='1'>Sí</option></select></label><script>document.getElementById(\"{i}\").value=\"{v}\";</script>";
 const char WB_FORM_PARAM_NUMBER[] PROGMEM = "<label>{p}<input id='{i}' type='{t}' name='{n}' {r} value='{v}' /></label>";
 const char WB_NODE_CONF[] PROGMEM = "<div class='sc'><span>4</span >Información del nodo</div><div class='iw'>";
 const char WB_SCAN_LINK[] PROGMEM = "<div class='ba'><a href='wifi'><input class='bs' type='button' name='Scan'></a></div>";
@@ -71,6 +71,7 @@ int autoConnect (char const *apName, char const *apPassword) {
   addLog(LOG_LEVEL_INFO, log);
   while (WiFi.status() != WL_CONNECTED && millis() < wifiStart + WIFI_BEGIN_TIMEOUT) {
     delay(500);
+    if (sysCfg.nodeSerialLogLevel) {Serial.print("C");}
   }
   if (WiFi.status() == WL_CONNECTED) {
     sprintf_P(log, PSTR("WIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
@@ -84,6 +85,7 @@ int autoConnect (char const *apName, char const *apPassword) {
     wifiStart = millis();
     while (wifiMulti.run() != WL_CONNECTED && millis() < wifiStart + WIFI_BEGIN_CRED_TIMEOUT) {
       delay(500);
+      if (sysCfg.nodeSerialLogLevel) {Serial.print("W");}
     }
     /*    WiFi.begin(sysCfg.WifiSSID1, sysCfg.WifiPassword);
           wifiStart=millis();

@@ -3,6 +3,8 @@
 //OJO, modificar en la librería el valor de #define MQTT_BUFFER_SIZE 512 de 128 a 512
 //TODO: cuando se salven nuevas credenciales de wifi en la web hay que poner una marca para que no use las cacheadas.
 //TODO: Despues de la configuración inicial no conecta si no se resetea
+//TODO: Poner el valor en el select de los logs para que no los ponga a 0
+
 
 //V4.1 Se añade el comando para pedir al nodo que mande la config.
 //V4.2 Se normalizan los comandos de configuración
@@ -11,9 +13,9 @@ ADC_MODE(ADC_VCC);
 #define CON_SSL           true             //Compilar con TSL/SSL
 #define HW_VER            "SONOFF"         //VERSION DEL HW
 #if CON_SSL
-  #define FW_VER            "4.2 SSL"            //VERSION DEL FW
+  #define FW_VER            "4.5 SSL"            //VERSION DEL FW
 #else
-  #define FW_VER            "4.2"            //VERSION DEL FW
+  #define FW_VER            "4.5"            //VERSION DEL FW
 #endif
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 #define LED               13               //El led que se va a utilizar para parpadear
@@ -33,8 +35,10 @@ ADC_MODE(ADC_VCC);
 #define SYS_LOG_LEVEL          LOG_LEVEL_NONE
 #define SERIAL_LOG_LEVEL       LOG_LEVEL_DEBUG
 #define SERIAL_IO              true
+#define UPD_WIFI_CFG_FROM_MQTT 1
+#define UPD_MQTT_CFG_FROM_MQTT 1
 
-#define CFG_HOLDER             0x20160313   // Change this value to load default configurations
+#define CFG_HOLDER             0x20160314   // Change this value to load default configurations
 // MQTT
 #define MQTT_SERVER            "www.whatsbee.net"
 #if CON_SSL
@@ -47,7 +51,7 @@ ADC_MODE(ADC_VCC);
 #define MQTT_PASSWORD          ""
 #define MQTT_GRPTOPIC          "SONOFFs"   // Group topic
 #define MQTT_TOPIC             "SONOFF"
-#define MQTT_SUBTOPIC          "POWER"
+//#define MQTT_SUBTOPIC          "POWER"
 #define MQTT_CONN_RETRYS 20       //Número máximo de intentos de conexión a MQTT
 
 
@@ -110,20 +114,21 @@ struct SYSCFG {                 //Almacena la configuración
   byte          nodeSerialLogLevel;
   byte          nodeSysLogLevel ;
   char          nodeSyslogHost[32];
-  char          sta_ssid[32];
-  char          sta_pwd[64];
-  char          sta_ssid2[32];
-  char          sta_pwd2[64];
-  char          sta_ssid3[32];
-  char          sta_pwd3[64];
-  char          mqtt_server[32];
-  char          mqtt_port[5];
-  char          mqtt_user[32];
-  char          mqtt_password[32];
-  char          mqtt_topic[32];
+  char          WifiSSID1[32];
+  char          WifiPassword[64];
+  char          WifiSSID2[32];
+  char          WifiPassword2[64];
+  char          WifiSSID3[32];
+  char          WifiPassword3[64];
+  char          MQTTServer[32];
+  char          MQTTPort[5];
+  char          MQTTUser[32];
+  char          MQTTPassword[32];
+  char          MQTTTopic[32];
   char          nodeName[32];
   char          nodeType[32];
-  char          mqtt_subtopic[32];
+  int8_t        updWifiConfigFromMQTT;
+  int8_t        updMqttConfigFromMQTT;
   int8_t        timezone;
   uint8_t       power;
   uint8_t       reboot_setup;
@@ -133,40 +138,24 @@ struct SYSCFG {                 //Almacena la configuración
   int           nodeSleepInterval;
 } sysCfg;
 
-char Hostname[32];          //TODO:Comprobar si hay que borrarlo
-/*char mqtt_server[40] = "www.whatsbee.net"; //definir aqui los valores por defecto por si no se encuentra el json.
-#if CON_SSL
-  char mqtt_port[6] = "8883";
-#else
-  char mqtt_port[6] = "1883";
-#endif
-*/
-boolean   estado = false;
-char      autoSSID_name[20] = "Wastbee";
-char      autoSSID_password[20] = "password";
-char      mqtt_user[30];
-char      mqtt_password[40];
-char      mqtt_topic[60];
-char      nodeName [30];
-char      nodeType [30];
-char      nodeAct [6] = DEF_INTERVAL; //Frecuencia de actualización en segundos
-char      nodeThre [4]; //Cambios para enviar actualización
-int       act = 60;
-int       thre = 0;
-String    nodeMSG; //Mensaje a publicar en el log
-boolean   pendingNodeMSG = false; //indica si hay algún mensaje pendiente.
-String    nodeValue;//Mensaje a publicar en el Topic
-boolean   pendingNodeValue = false; //Indica si hay algún mensaje pendiente
-long int  pulsado = 0; //Para medir el tiempo del bucle del botón
-double    tApagado = 0.1; //el tiempo que el led que parpadea estará encendido.
-unsigned long lastMillis = 0; //para la prueba del MQTT
-String    deviceTopic; //Contiene el topic a través del que se le pasan los valores de config
-long      rebotMillis = 0;
-boolean   rebote = false;
-int       intentosMQTT = 0;
-long      wifiStart;
-double    lastConfigTime=0;
-double    lastDataTime=0;
+char            Hostname[32];          //TODO:Comprobar si hay que borrarlo
+boolean         estado = false;
+char            autoSSID_name[20] = "Wastbee";
+char            autoSSID_password[20] = "password";
+String          nodeMSG; //Mensaje a publicar en el log
+boolean         pendingNodeMSG = false; //indica si hay algún mensaje pendiente.
+String          nodeValue;//Mensaje a publicar en el Topic
+boolean         pendingNodeValue = false; //Indica si hay algún mensaje pendiente
+long int        pulsado = 0; //Para medir el tiempo del bucle del botón
+double          tApagado = 0.1; //el tiempo que el led que parpadea estará encendido.
+unsigned long   lastMillis = 0; //para la prueba del MQTT
+String          deviceTopic; //Contiene el topic a través del que se le pasan los valores de config
+long            rebotMillis = 0;
+boolean         rebote = false;
+//int             intentosMQTT = 0;
+long            wifiStart;
+double          lastConfigTime=0;
+double          lastDataTime=0;
 
 //**********PREDEFINICION DE FUNCIONES*************************
 void        leerSensor();
@@ -191,9 +180,7 @@ void        messageReceived(String topic, String payload, char * bytes, unsigned
 boolean     configTopic (String topic, String payload);
 void        setNodeMSG (String msg);
 int         getInterval (String payload);
-int     autoConnect (char const *apName, char const *apPassword);
-//boolean     WiFi_autoConnect(char const *apName, char const *apPassword);
-//int         connectWifi(String ssid, String pass);
+int         autoConnect (char const *apName, char const *apPassword);
 boolean     startConfigPortal(char const *apName, char const *apPassword);
 void        setupConfigPortal();
 void        handleWifi();
@@ -239,11 +226,11 @@ void setup() {
   setupPortal(); //Se conecta a la wifi o inicializa el portal
 
 //#if CON_SSL//TODO:Parece lo mismo, comprobar
-  if (mqttClient.begin(sysCfg.mqtt_server, atoi(sysCfg.mqtt_port), secureClient)) {
+  if (mqttClient.begin(sysCfg.MQTTServer, atoi(sysCfg.MQTTPort), secureClient)) {
     ledBlink (2, 0.05); 
   }
 //#else
-//  if (mqttClient.begin(sysCfg.mqtt_server, atoi(sysCfg.mqtt_port), secureClient)) {
+//  if (mqttClient.begin(sysCfg.MQTTServer, atoi(sysCfg.MQTTPort), secureClient)) {
 //    ledBlink (2, 0.05); // Sin seguridad
 //  }
 //#endif
@@ -288,9 +275,9 @@ void loop() {
   //Escribe las actualizaciones pendientes de estado en el broker
   if (pendingNodeValue) {
     pendingNodeValue = false;
-    sprintf_P(log, PSTR("MQTT: Publicado \"%s\" = %s"), sysCfg.mqtt_topic, nodeValue.c_str());
+    sprintf_P(log, PSTR("MQTT: Publicado \"%s\" = %s"), sysCfg.MQTTTopic, nodeValue.c_str());
     addLog(LOG_LEVEL_DEBUG, log);
-    mqttClient.publish(sysCfg.mqtt_topic, nodeValue);
+    mqttClient.publish(sysCfg.MQTTTopic, nodeValue);
     mqttClient.loop();
     //Serial.println ("Publicado " + nodeValue);
   }

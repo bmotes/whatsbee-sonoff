@@ -1,3 +1,38 @@
+/*
+Nombre V45          Send Config Recibir MQTT  Recibir web Enviar web  Descripción
+sNodeName               X X x x                     Nombre común del nodo
+gNodeType               X x                         Tipo de nodo
+sNodeSendConfigInterval X X x x                     Intervalo de envio de los datos de configuración
+sNodeSendDataInterval   X x x x                     Intervalo de envio de los datos
+sNodeSendDataThreshold  X X x x                     Umbral que se tiene que superar para que envie los datos
+sNodeSleepInterval      X X x x                     Intervalo de Sleep (0 es no sleep)
+gNodeHardwareVer        X N                         Versión del hardware
+gNodeFirmwareVer        X N                         Versión del firmware
+gNodeRuntime            X N                         Tiempo desde el encendido (en milisegundos)
+gNodeVoltaje            X N                         Tensión de alimentación del nodo.
+          
+sNodeSyslogHost         X x x x                     Host al que envía el syslog
+sNodeSysLogLevel        X X x x                     Nivel de syslog (de 0 a 5)
+sNodeSerialLogLevel     X X x x                     Nivel de syslog (de 0 a 5) para el puerto serie
+          
+sWifiSSID1              x x x x                     Primer SSID de Wifi
+pWifiPassword1          N x x x                     Primer password
+sWifiSSID2              x x x x                     Segundo SSID de Wifi
+pWifiPassword2          N x x x                     Segundo password
+sWifiSSID3              x x x x                     Tercer SSID de Wifi
+pWifiPassword3          N x x x                     Tercer password
+          
+eMQTTTopic              X x x x                     Topic en el que publica el nodo (en una rama que el usuario tenga permisos)
+eMQTTServer             X X x x                     Nombre de host o dirección Ip del broker MQTT
+eMQTTPort               X X x x                     Puerto de escucha del broker
+eMQTTUser               X x x x                     Usuario de Whatsbee
+pMQTTPassword           X x x x                     Password de Whatsbee
+          
+cReset                  X                           Resetea el nodo (comando)
+cPubConfig              X                           Reenvia la configuración al broker (comando)
+cResetPortal            x                           Resetea el nodo iniciando el portal de config
+*/
+
 extern "C" {
 #include "spi_flash.h"
 }
@@ -37,20 +72,21 @@ void CFG_Default()
   sysCfg.nodeSerialLogLevel = SERIAL_LOG_LEVEL;
   sysCfg.nodeSysLogLevel  = SYS_LOG_LEVEL;
   strcpy(sysCfg.nodeSyslogHost, SYS_LOG_HOST);
-  strcpy(sysCfg.sta_ssid, STA_SSID);
-  strcpy(sysCfg.sta_pwd, STA_PASS);
-  strcpy(sysCfg.sta_ssid2, "");
-  strcpy(sysCfg.sta_pwd2, "");
-  strcpy(sysCfg.sta_ssid3, "");
-  strcpy(sysCfg.sta_pwd3, "");
-  strcpy(sysCfg.mqtt_server, MQTT_SERVER);
-  strcpy(sysCfg.mqtt_port, MQTT_PORT);
-  strcpy(sysCfg.mqtt_user, MQTT_USER);
-  strcpy(sysCfg.mqtt_password, MQTT_PASSWORD);
-  strcpy(sysCfg.mqtt_topic, MQTT_TOPIC);
+  strcpy(sysCfg.WifiSSID1, STA_SSID);
+  strcpy(sysCfg.WifiPassword, STA_PASS);
+  strcpy(sysCfg.WifiSSID2, "");
+  strcpy(sysCfg.WifiPassword2, "");
+  strcpy(sysCfg.WifiSSID3, "");
+  strcpy(sysCfg.WifiPassword3, "");
+  strcpy(sysCfg.MQTTServer, MQTT_SERVER);
+  strcpy(sysCfg.MQTTPort, MQTT_PORT);
+  strcpy(sysCfg.MQTTUser, MQTT_USER);
+  strcpy(sysCfg.MQTTPassword, MQTT_PASSWORD);
+  strcpy(sysCfg.MQTTTopic, MQTT_TOPIC);
   strcpy(sysCfg.nodeName, NODE_NAME);
   strcpy(sysCfg.nodeType, NODE_TYPE);
-  strcpy(sysCfg.mqtt_subtopic, MQTT_TOPIC);
+  sysCfg.updWifiConfigFromMQTT = UPD_WIFI_CFG_FROM_MQTT;
+  sysCfg.updMqttConfigFromMQTT = UPD_MQTT_CFG_FROM_MQTT;
   sysCfg.timezone = APP_TIMEZONE;
   sysCfg.power = APP_POWER;
   sysCfg.reboot_setup = 1;
@@ -61,7 +97,7 @@ void CFG_Default()
 
 
   //BORRAR  Serial.print ("Justo antes de guardar sysCfg: ");
-  //BORRAR  Serial.println (sysCfg.mqtt_server);
+  //BORRAR  Serial.println (sysCfg.MQTTServer);
 
   CFG_Save();
 }
@@ -114,26 +150,28 @@ void CFG_Erase()
 //TODO:En la version definitiva esto debe de borrarse y todas las referencias
 void CFG_Print()
 {
+  if (sysCfg.nodeSerialLogLevel) {
   Serial.println("***************SYSCFG*************************");
   Serial.print ("sysCfg.cfg_holder: "); Serial.println(sysCfg.cfg_holder);
   Serial.print ("sysCfg.saveFlag: "); Serial.println(sysCfg.saveFlag);
   Serial.print ("sysCfg.nodeSerialLogLevel: "); Serial.println(sysCfg.nodeSerialLogLevel);
   Serial.print ("sysCfg.nodeSysLogLevel : "); Serial.println(sysCfg.nodeSysLogLevel );
   Serial.print ("sysCfg.nodeSyslogHost: "); Serial.println(sysCfg.nodeSyslogHost);
-  Serial.print ("sysCfg.sta_ssid: "); Serial.println(sysCfg.sta_ssid);
-  Serial.print ("sysCfg.sta_pwd: "); Serial.println(sysCfg.sta_pwd);
-  Serial.print ("sysCfg.sta_ssid2: "); Serial.println(sysCfg.sta_ssid2);
-  Serial.print ("sysCfg.sta_pwd2: "); Serial.println(sysCfg.sta_pwd2);
-  Serial.print ("sysCfg.sta_ssid3: "); Serial.println(sysCfg.sta_ssid3);
-  Serial.print ("sysCfg.sta_pwd3: "); Serial.println(sysCfg.sta_pwd3);
-  Serial.print ("sysCfg.mqtt_server: "); Serial.println(sysCfg.mqtt_server);
-  Serial.print ("sysCfg.mqtt_port: "); Serial.println(sysCfg.mqtt_port);
-  Serial.print ("sysCfg.mqtt_user: "); Serial.println(sysCfg.mqtt_user);
-  Serial.print ("sysCfg.mqtt_password: "); Serial.println(sysCfg.mqtt_password);
-  Serial.print ("sysCfg.mqtt_topic: "); Serial.println(sysCfg.mqtt_topic);
+  Serial.print ("sysCfg.WifiSSID1: "); Serial.println(sysCfg.WifiSSID1);
+  Serial.print ("sysCfg.WifiPassword: "); Serial.println(sysCfg.WifiPassword);
+  Serial.print ("sysCfg.WifiSSID2: "); Serial.println(sysCfg.WifiSSID2);
+  Serial.print ("sysCfg.WifiPassword2: "); Serial.println(sysCfg.WifiPassword2);
+  Serial.print ("sysCfg.WifiSSID3: "); Serial.println(sysCfg.WifiSSID3);
+  Serial.print ("sysCfg.WifiPassword3: "); Serial.println(sysCfg.WifiPassword3);
+  Serial.print ("sysCfg.MQTTServer: "); Serial.println(sysCfg.MQTTServer);
+  Serial.print ("sysCfg.MQTTPort: "); Serial.println(sysCfg.MQTTPort);
+  Serial.print ("sysCfg.MQTTUser: "); Serial.println(sysCfg.MQTTUser);
+  Serial.print ("sysCfg.MQTTPassword: "); Serial.println(sysCfg.MQTTPassword);
+  Serial.print ("sysCfg.MQTTTopic: "); Serial.println(sysCfg.MQTTTopic);
   Serial.print ("sysCfg.nodeName: "); Serial.println(sysCfg.nodeName);
   Serial.print ("sysCfg.nodeType: "); Serial.println(sysCfg.nodeType);
-  Serial.print ("sysCfg.mqtt_subtopic: "); Serial.println(sysCfg.mqtt_subtopic);
+  Serial.print ("sysCfg.updWifiConfigFromMQTT: "); Serial.println(sysCfg.updWifiConfigFromMQTT);
+  Serial.print ("sysCfg.updMqttConfigFromMQTT: "); Serial.println(sysCfg.updMqttConfigFromMQTT);
   Serial.print ("sysCfg.timezone: "); Serial.println(sysCfg.timezone);
   Serial.print ("sysCfg.power: "); Serial.println(sysCfg.power);
   Serial.print ("sysCfg.reboot_setup: "); Serial.println(sysCfg.reboot_setup);
@@ -142,5 +180,10 @@ void CFG_Print()
   Serial.print ("sysCfg.nodeSendDataThreshold: "); Serial.println(sysCfg.nodeSendDataThreshold);
   Serial.print ("sysCfg.nodeSleepInterval: "); Serial.println(sysCfg.nodeSleepInterval);
   Serial.println("***************SYSCFG*************************");
+  }
+  else
+  {
+   Serial.print ("sysCfg.nodeSerialLogLevel: "); Serial.println(sysCfg.nodeSerialLogLevel);
+  }
 }
 
