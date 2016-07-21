@@ -11,14 +11,14 @@
 
 ADC_MODE(ADC_VCC);
 #define CON_SSL           true             //Compilar con TSL/SSL
-#define HW_VER            "SONOFF"         //VERSION DEL HW
+#define HW_VER            "SMTSW"         //VERSION DEL HW
 #if CON_SSL
   #define FW_VER            "4.5 SSL"            //VERSION DEL FW
 #else
   #define FW_VER            "4.5"            //VERSION DEL FW
 #endif
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
-#define LED               13               //El led que se va a utilizar para parpadear
+#define LED               13               //El led que se va a utilizar para parpadear 13 sw, 16 amica
 #define BUTTON            0                //El botón que se utiliza para entrar en la config
 #define RELE              12               //El Relé
 #define INIT_PORTAL_TIME  4000             //Tiempo mínimo (ms) que se tiene que pulsar el botón para que inicie el ConfigPortal
@@ -61,7 +61,7 @@ ADC_MODE(ADC_VCC);
 #define WIFI_HOSTNAME          "WhatsBee-%06x-%s"
 //Node
 #define NODE_NAME               "unconfigured"
-#define NODE_TYPE               "SONOF"
+#define NODE_TYPE               "SMTSW"
 // Application
 #define APP_TIMEZONE           1            // +1 hour (Amsterdam)
 #define APP_POWER              0            // Saved power state Off
