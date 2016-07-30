@@ -1,5 +1,5 @@
 /*
-Nombre V45          Send Config Recibir MQTT  Recibir web Enviar web  Descripción
+Nombre V45          Send Config / Recibir MQTT / Recibir web / Enviar web  Descripción
 sNodeName               X X x x                     Nombre común del nodo
 gNodeType               X x                         Tipo de nodo
 sNodeSendConfigInterval X X x x                     Intervalo de envio de los datos de configuración

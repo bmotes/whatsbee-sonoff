@@ -1,10 +1,8 @@
 const char HTTP_HEAD_END[] PROGMEM = "</head><body><div style='text-align: left; display: inline-block;'>";
 const char HTTP_ITEM_PADLOCK[] PROGMEM = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==' width='13px'/>";
 const char HTTP_END[] PROGMEM = "</div></body></html>";
-
 const char WB_HEAD[] PROGMEM = "<!DOCTYPE html><html lang=\"es\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/> <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /><title>{v}</title>";
 const char WB_STYLE[] PROGMEM = "<style>.fr{width:450px;padding:30px;margin:40px auto;background:#FFF;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.23);font:normal 18px Arial}.iw{padding:30px;background:#f8f8f8;border-radius:6px;margin-bottom:15px}.fr h1{background:#1ea213;padding:20px 30px 15px 95px;margin:-30px -30px 30px -30px;border-radius:10px 10px 0 0;color:#fff;text-shadow:1px 1px 3px rgba(0,0,0,0.12);font:normal 30px Arial;box-shadow:inset 0 2px 2px 0 rgba(255,255,255,0.17);border:1px solid #257c9e}.fr h1>span{display:block;margin-top:2px;font:13px Arial}.fr label{display:block;font-size:13px;color:#888;margin-bottom:15px}.fr input[type=text],.fr input[type=password],.fr input[type=number],.fr select{display:block;box-sizing:border-box;-moz-box-sizing:border-box;width:100%;padding:8px;border-radius:6px;border:2px solid #fff;box-shadow:inset 0 1px 1px rgba(0,0,0,0.33)}.fr .sc{font-size:20px;color:#1ea213;margin-bottom:5px;margin-left:20px}.sc span{background:#1ea213;padding:5px 10px 5px 10px;position:absolute;border-radius:50%;font-size:14px;margin-left:-45px;color:#fff;margin-top:-3px}.fr .bs{width:150px;background:#1ea213;padding:8px 20px 8px 20px;border-radius:30px;color:#fff;font-size:18px;margin:2px}.bs:hover{background:#116d09}</style>";
-//const char WB_SCRIPT[] PROGMEM = "<script>function tgl(){if(document.getElementById('oc').style.display=='block'){document.getElementById('oc').style.display='none';}else{document.getElementById('oc').style.display='block';}}function setAp(x){document.getElementById('s').value = x.value;document.getElementById('p').focus();tgl();}</script>";
 const char WB_SCRIPT[] PROGMEM = "<script>function tgl(){if(document.getElementById('oc').style.display=='block'){document.getElementById('oc').style.display='none';}else{document.getElementById('oc').style.display='block';}}function setAp(x){document.getElementById('sWifiSSID1').value = x.value;document.getElementById('pWifiPassword1').focus();tgl();}function setAp2(x){document.getElementById('sWifiSSID2').value = x.value;document.getElementById('pWifiPassword2').focus();tgl();}function setAp3(x){document.getElementById('sWifiSSID3').value = x.value;document.getElementById('pWifiPassword3').focus();tgl();}</script>";
 const char WB_HEAD_END[] PROGMEM = "</head><body><div class='fr'><img style = \"position: absolute;margin: -20px;\" src = \"data:image/png;base64,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\"/>";
 const char WB_HEAD_TITLE1[] PROGMEM = "<h1>Configura tu WhatsMote!!<span>Escribe los parámetros para WhatsBee</span></h1>";
@@ -37,49 +35,25 @@ unsigned long timeout = TIMEOUT;
 unsigned long start = 0;
 String        contenido;
 
-
-//predeclaracion de funciones
-/*void          handleWifi();
-void          handleWifiSave();
-void          handleReset();
-void          handleNotFound();
-void          handleUpdatePost(); //OTA
-void          handleUpload(); //OTA
-void          handleUpdateGet(); //OTA
-int           getRSSIasQuality(int RSSI);
-boolean       isIp(String str);
-String        toStringIp(IPAddress ip);
-String        urldecode(const char *src);
-//int           connectWifi(String ssid, String pass);
-void          (*_apcallback)(void) = NULL;
-void          (*_savecallback)(void) = NULL;
-boolean        isIp(String str);
-String        toStringIp(IPAddress ip);
-int           getRSSIasQuality(int RSSI);
-boolean       captivePortal();
-int           _minimumQuality = -1;
-boolean       _debug = true; //arreglar despues
-
-*/
 int autoConnect (char const *apName, char const *apPassword) {
   //Primer intento de conectar con las credenciales almacenadas
   char log[80];
   wifiStart = millis();
   WiFi.mode(WIFI_STA);
   WiFi.begin();
-  sprintf_P(log, PSTR("WIFI: Intento de conexión con credenciales en cache"));
+  sprintf_P(log, PSTR("\nWIFI: Intento de conexión con credenciales en cache"));
   addLog(LOG_LEVEL_INFO, log);
   while (WiFi.status() != WL_CONNECTED && millis() < wifiStart + WIFI_BEGIN_TIMEOUT) {
     delay(500);
     if (sysCfg.nodeSerialLogLevel) {Serial.print("C");}
   }
   if (WiFi.status() == WL_CONNECTED) {
-    sprintf_P(log, PSTR("WIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
+    sprintf_P(log, PSTR("\nWIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
     addLog(LOG_LEVEL_INFO, log);
     return WiFi.status();
   }
   else {//No se ha conseguido conectar despues del tiempo
-    sprintf_P(log, PSTR("WIFI: Intento de conexión con credenciales en config"));
+    sprintf_P(log, PSTR("\nWIFI: Intento de conexión con credenciales en config"));
     addLog(LOG_LEVEL_INFO, log);
     wifiMulti.run();
     wifiStart = millis();
@@ -87,14 +61,8 @@ int autoConnect (char const *apName, char const *apPassword) {
       delay(500);
       if (sysCfg.nodeSerialLogLevel) {Serial.print("W");}
     }
-    /*    WiFi.begin(sysCfg.WifiSSID1, sysCfg.WifiPassword);
-          wifiStart=millis();
-          while (WiFi.status() != WL_CONNECTED && millis()< wifiStart + WIFI_BEGIN_CRED_TIMEOUT) {
-          delay(500);
-          Serial.print(".");
-        }*/
     if (WiFi.status() == WL_CONNECTED) {
-      sprintf_P(log, PSTR("WIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
+      sprintf_P(log, PSTR("\nWIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
       addLog(LOG_LEVEL_INFO, log);
     return WiFi.status();
     }
@@ -142,8 +110,11 @@ void setupConfigPortal() {
   char log[80];
   char ip[16];
 
-//  dnsServer.reset(new DNSServer());   //NOTA: hay numerosos problemas para que funcione el portal cautivo, por lo que se elimina la opción del DNS Server
-  //server.reset(new ESP8266WebServer(80));
+#if CAPTIVE_PORTAL
+  dnsServer.reset(new DNSServer());   //NOTA: hay numerosos problemas para que funcione el portal cautivo, por lo que se elimina la opción del DNS Server
+  server.reset(new ESP8266WebServer(80));
+#endif
+
   start = millis();
 
   sprintf_P(log, PSTR("Portal: Configuring Access point %s"), autoSSID_name);

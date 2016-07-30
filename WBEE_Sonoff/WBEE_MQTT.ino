@@ -34,22 +34,8 @@ void connectMQTT() {
 
 //**********************se ha recibido un mensaje de MQTT********************************
 void messageReceived(String topic, String payload, char * bytes, unsigned int length) {
-  char log[80];
-  //char paramArray[10];
-  sprintf_P(log, PSTR("MQTT: Recibido \"%s\" = %s"), topic.c_str(), payload.c_str());
-  addLog(LOG_LEVEL_DEBUG, log);
-  //  Serial.println(String("incoming: ") +topic + String(" - ")+payload);
   if (!configTopic(topic, payload)) { //Ha llegado un topic, pero que no es de config
-    if (payload == "on") { //TODO: verificar que es el topic correcto
-      estado = true;
-      digitalWrite(RELE, HIGH);
-      digitalWrite(LED, LOW);
-    }
-    else {
-      estado = false;
-      digitalWrite(RELE, LOW);
-      digitalWrite(LED, HIGH);
-    }
+    onMQTTMsg (topic, payload, bytes, length);
   }
 }
 

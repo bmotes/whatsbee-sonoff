@@ -3,30 +3,30 @@
 //OJO, modificar en la librería el valor de #define MQTT_BUFFER_SIZE 512 de 128 a 512
 //TODO: cuando se salven nuevas credenciales de wifi en la web hay que poner una marca para que no use las cacheadas.
 //TODO: Despues de la configuración inicial no conecta si no se resetea
-//TODO: Poner el valor en el select de los logs para que no los ponga a 0
 
 
 //V4.1 Se añade el comando para pedir al nodo que mande la config.
 //V4.2 Se normalizan los comandos de configuración
 
 ADC_MODE(ADC_VCC);
+
 #define CON_SSL           true             //Compilar con TSL/SSL
 #define HW_VER            "SONOFF"         //VERSION DEL HW
-#if CON_SSL
-  #define FW_VER            "4.7 SSL"            //VERSION DEL FW
-#else
-  #define FW_VER            "4.7"            //VERSION DEL FW
-#endif
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 
-#define LED               13               //El led que se va a utilizar para parpadear 13 sonoff, 16 amica
+  #if CON_SSL
+    #define FW_VER            "4.8 SSL"            //VERSION DEL FW
+  #else
+    #define FW_VER            "4.8"            //VERSION DEL FW
+  #endif
 
+#define LED               13               //El led que se va a utilizar para parpadear 13 sonoff, 16 amica
 #define BUTTON            0                //El botón que se utiliza para entrar en la config
 #define RELE              12               //El Relé
 #define INIT_PORTAL_TIME  4000             //Tiempo mínimo (ms) que se tiene que pulsar el botón para que inicie el ConfigPortal
 #define DUTTY_CYCLE_LED 10 //el dutty del LED
 #define DEF_INTERVAL "60" //El intervalo por defecto para el envio de topics
-// Syslog
+
 #define LOG_LEVEL_NONE         0
 #define LOG_LEVEL_ERROR        1
 #define LOG_LEVEL_INFO         2
@@ -39,55 +39,52 @@ ADC_MODE(ADC_VCC);
 #define SERIAL_IO              true
 #define UPD_WIFI_CFG_FROM_MQTT 1
 #define UPD_MQTT_CFG_FROM_MQTT 1
-
 #define CFG_HOLDER             0x20160314   // Change this value to load default configurations
-// MQTT
+
 #define MQTT_SERVER            "www.whatsbee.net"
-#if CON_SSL
-  #define MQTT_PORT              "8883"
-#else
-  #define MQTT_PORT              "1883"
-#endif
+
+  #if CON_SSL
+    #define MQTT_PORT              "8883"
+  #else
+    #define MQTT_PORT              "1883"
+  #endif
+
 #define MQTT_CLIENT_ID         "SONOFF_%06X"  // Also fall back topic using Chip Id = last 6 characters of MAC address
 #define MQTT_USER              ""
 #define MQTT_PASSWORD          ""
 #define MQTT_GRPTOPIC          "SONOFFs"   // Group topic
 #define MQTT_TOPIC             "SONOFF"
-//#define MQTT_SUBTOPIC          "POWER"
 #define MQTT_CONN_RETRYS 20       //Número máximo de intentos de conexión a MQTT
 
-
-// Wifi
 #define STA_SSID               "WhatsBee"
 #define STA_PASS               "XXXX"
 #define WIFI_HOSTNAME          "WhatsBee-%06x-%s"
-//Node
+
 #define NODE_NAME               "unconfigured"
 #define NODE_TYPE               HW_VER
-// Application
+
 #define APP_TIMEZONE           1            // +1 hour (Amsterdam)
 #define APP_POWER              0            // Saved power state Off
 #define TIMEOUT                3000000          //Tiempo en milisegundos que está activo el portal
 
-#ifdef DEBUG_ESP_PORT
-  #define DEBUG_MSG(...) DEBUG_ESP_PORT.printf( __VA_ARGS__ )
-#else
-  #define DEBUG_MSG(...)
-#endif
+  #ifdef DEBUG_ESP_PORT
+    #define DEBUG_MSG(...) DEBUG_ESP_PORT.printf( __VA_ARGS__ )
+  #else
+    #define DEBUG_MSG(...)
+  #endif
 
 #define WIFI_BEGIN_TIMEOUT  8000      //Tiempo máximo (ms) para intentar conectarse con las credenciales almacenadas.
 #define WIFI_BEGIN_CRED_TIMEOUT 20000 //Tiempo máximo (ms) para intentar conectarse con las credenciales almacenadas.
-
 #define SEND_CONFIG_TIME 3600000     //Tiempo en el que envia los datos de config del nodo (ms)
 #define SEND_DATA_TIME 60000         //Tiempo en el que envia los datos del topic
 #define SEND_DATA_THRESHOLD 0        //Porcentajde de diferencia para enviar los datos o no
 #define NODE_SLEEP 0                 //Indica si el nodo duerme
 
 #if CAPTIVE_PORTAL
-  #include <DNSServer.h>   //XXNOTA: hay numerosos problemas para que funcione el portal cautivo, por lo que se elimina la opción del DNS Server
+  #include <DNSServer.h>              //XXNOTA: hay numerosos problemas para que funcione el portal cautivo, por lo que se elimina la opción del DNS Server
   #define DNS_PORT 53 //El puerto del DNS
 #endif
-//BORRAR #include <FS.h>                   //this needs to be first, or it all crashes and burns...
+
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
@@ -99,14 +96,16 @@ Ticker enciendeLed;
 Ticker apagaLed;
 ESP8266WiFiMulti wifiMulti;     //Librería Wifi para permitir la conexión a una lista de APS
 WiFiUDP portUDP;                //Necesarsio para el sysLog
-#if CAPTIVE_PORTAL
-  DNSServer dnsServer;          //Servidor DNS si se utiliza el portal cautivo
-#endif
-#if CON_SSL
-  WiFiClientSecure secureClient;//Cliente de wifi
-#else
-  WiFiClient secureClient;      //Cliente de wifi
-#endif
+  #if CAPTIVE_PORTAL
+    DNSServer dnsServer;          //Servidor DNS si se utiliza el portal cautivo
+  #endif
+
+  #if CON_SSL
+    WiFiClientSecure secureClient;//Cliente de wifi
+  #else
+    WiFiClient secureClient;      //Cliente de wifi
+  #endif
+
 ESP8266WebServer server (80);   //Cliente de wifi
 MQTTClient mqttClient;          //Cliente MQTT
 
@@ -154,7 +153,6 @@ unsigned long   lastMillis = 0; //para la prueba del MQTT
 String          deviceTopic; //Contiene el topic a través del que se le pasan los valores de config
 long            rebotMillis = 0;
 boolean         rebote = false;
-//int             intentosMQTT = 0;
 long            wifiStart;
 double          lastConfigTime=0;
 double          lastDataTime=0;
@@ -164,11 +162,11 @@ void        leerSensor();
 void        ledBlink (double intervaloParpadeo, double tiempoEncendido);
 void        setupSerial();
 void        setupPins();
-void        setupFS();
+void        setupGadget();
 void        setupPortal();
 void        pulsadoBoton();
 void        pulsaLarga();
-void        pulsaCorta();
+void        onShortPush();
 boolean     configTopic (String topic, String payload);
 void        addLog(byte loglevel, const char *line);
 void        addLog(byte loglevel, String& string);
@@ -200,11 +198,29 @@ String      urldecode(const char *src);
 boolean     isIp(String str);
 boolean     captivePortal();
 void        sendConfigInfo();
+void        onMQTTMsg (String topic, String payload, char * bytes, unsigned int length);
+void        onShortPush();
 //**********PREDEFINICION DE FUNCIONES*************************
 
+//*******************CALLBACKS********************************
+void onMQTTMsg (String topic, String payload, char * bytes, unsigned int length) {
+  char log[80];
+  sprintf_P(log, PSTR("MQTT: Recibido \"%s\" = %s"), topic.c_str(), payload.c_str());
+  addLog(LOG_LEVEL_DEBUG, log);
+    if (payload == "on") { //TODO: verificar que es el topic correcto
+      estado = true;
+      digitalWrite(RELE, HIGH);
+      digitalWrite(LED, LOW);
+    }
+    else {
+      estado = false;
+      digitalWrite(RELE, LOW);
+      digitalWrite(LED, HIGH);
+    }
+  
+  }
 
-//################FUNCIONES PULSACION BOTON###################
-void pulsaCorta() {
+void onShortPush() {
   if (estado) {
     estado = false;
     pendingNodeValue = true;
@@ -219,27 +235,23 @@ void pulsaCorta() {
     digitalWrite(LED, LOW);
   }
 }
-//################FUNCIONES PULSACION BOTON###################
+//*******************CALLBACKS********************************
 
 void setup() {
-  setupSerial(); //Configuracion inicial del puerto serie
-  setupPins(); //Configuracion inicial de los pins
-  setupFS(); //Configuracion inicial del sistema de ficheros y el Json
-  setupPortal(); //Se conecta a la wifi o inicializa el portal
+  setupSerial();            //Configuracion inicial del puerto serie
+  setupPins();              //Configuracion inicial de los pins
+  setupGadget();                //Configuracion inicial del sistema de ficheros y el Json
+  setupPortal();            //Se conecta a la wifi o inicializa el portal
 
-//#if CON_SSL//TODO:Parece lo mismo, comprobar
   if (mqttClient.begin(sysCfg.MQTTServer, atoi(sysCfg.MQTTPort), secureClient)) {
     ledBlink (2, 0.05); 
   }
-//#else
-//  if (mqttClient.begin(sysCfg.MQTTServer, atoi(sysCfg.MQTTPort), secureClient)) {
-//    ledBlink (2, 0.05); // Sin seguridad
-//  }
-//#endif
 
   connectMQTT();
   sendConfigInfo();
 }
+
+
 
 void loop() {
   char log[80];

@@ -30,7 +30,7 @@ void pulsadoBoton() {
       pulsaLarga();
     }
     else {
-      pulsaCorta();
+      onShortPush();
       rebote = true;
       rebotMillis = millis();
     }
@@ -67,7 +67,7 @@ void setupPins () {
   attachInterrupt(BUTTON, pulsadoBoton, CHANGE);
 }
 
-void setupFS() {
+void setupGadget() {
   //CFG_Erase();//Solo para diagnóctico
   CFG_Load();
   String autoSSID = (String ("WhatsBee-") + String(ESP.getChipId()));
