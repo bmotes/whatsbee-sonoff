@@ -41,19 +41,19 @@ int autoConnect (char const *apName, char const *apPassword) {
   wifiStart = millis();
   WiFi.mode(WIFI_STA);
   WiFi.begin();
-  sprintf_P(log, PSTR("\nWIFI: Intento de conexión con credenciales en cache"));
+  sprintf_P(log, PSTR("\nWIFI: Connection attempt (cached credentials)"));
   addLog(LOG_LEVEL_INFO, log);
   while (WiFi.status() != WL_CONNECTED && millis() < wifiStart + WIFI_BEGIN_TIMEOUT) {
     delay(500);
     if (sysCfg.nodeSerialLogLevel) {Serial.print("C");}
   }
   if (WiFi.status() == WL_CONNECTED) {
-    sprintf_P(log, PSTR("\nWIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
+    sprintf_P(log, PSTR("\nWIFI: Connected to WiFi: %s"), WiFi.SSID().c_str());
     addLog(LOG_LEVEL_INFO, log);
     return WiFi.status();
   }
   else {//No se ha conseguido conectar despues del tiempo
-    sprintf_P(log, PSTR("\nWIFI: Intento de conexión con credenciales en config"));
+    sprintf_P(log, PSTR("\nWIFI: Connection attempt (stored credentials)"));
     addLog(LOG_LEVEL_INFO, log);
     wifiMulti.run();
     wifiStart = millis();
@@ -62,7 +62,7 @@ int autoConnect (char const *apName, char const *apPassword) {
       if (sysCfg.nodeSerialLogLevel) {Serial.print("W");}
     }
     if (WiFi.status() == WL_CONNECTED) {
-      sprintf_P(log, PSTR("\nWIFI: Conectado a SSID: %s"), WiFi.SSID().c_str());
+      sprintf_P(log, PSTR("\nWIFI: Connected to WiFi: %s"), WiFi.SSID().c_str());
       addLog(LOG_LEVEL_INFO, log);
     return WiFi.status();
     }
@@ -214,11 +214,11 @@ void handleWifi() {
  //       }
 
       }
-      sprintf_P(log, PSTR("Portal: Enviando lista WIFIS"));
+      sprintf_P(log, PSTR("Portal: Send AP list"));
       addLog(LOG_LEVEL_DEBUG_MORE, log);
       server.sendContent(contenido);
       server.sendContent("<br/>");
-      sprintf_P(log, PSTR("Portal: Lista WIFIS enviada"));
+      sprintf_P(log, PSTR("Portal: AP list sended"));
       addLog(LOG_LEVEL_DEBUG_MORE, log);
     }
   }
@@ -227,7 +227,7 @@ void handleWifi() {
   contenido = FPSTR(WB_INPUT_WIFI);
   contenido.replace("{v}", sysCfg.WifiSSID1);
   server.sendContent(contenido);
-  sprintf_P(log, PSTR("Portal: Enviado inicio del form"));
+  sprintf_P(log, PSTR("Portal: Send form init"));
   addLog(LOG_LEVEL_DEBUG_MORE, log);
 
   server.sendContent ("<div id='wifiadv' style='display:none'>");
@@ -405,8 +405,8 @@ void handleWifi() {
   server.sendContent_P(WB_CIERRE_DIV);
   server.sendContent_P(WB_CIERRE_DIV);//Este es el cierre del Div de la config avanzada
 
-  sprintf_P(log, PSTR("Portal: Enviado fin config"));
-  addLog(LOG_LEVEL_DEBUG_MORE, "Portal: Enviado fin config");
+  sprintf_P(log, PSTR("Portal: Sended config end"));
+  addLog(LOG_LEVEL_DEBUG_MORE, log);
   server.sendContent_P(WB_LINK_ADV);
   //server.sendContent ("<Label><a href='#' onclick=\"if(document.getElementById('wifiadv').style.display=='none'){document.getElementById('wifiadv').style.display='block';}else{document.getElementById('wifiadv').style.display='none';}if(document.getElementById('cfgadv').style.display=='none'){document.getElementById('cfgadv').style.display='block';}else{document.getElementById('cfgadv').style.display='none';}\">Configuración avanzada</a></Label>");
   server.sendContent_P(WB_BUTT_SUBMIT);
@@ -414,11 +414,11 @@ void handleWifi() {
   addLog(LOG_LEVEL_DEBUG_MORE, log);
 
   server.sendContent_P("</form></div></body></html>");
-  sprintf_P(log, PSTR("Portal: Fin del html"));
+  sprintf_P(log, PSTR("Portal: html end"));
   addLog(LOG_LEVEL_DEBUG_MORE, log);
 
   server.client().stop();
-  sprintf_P(log, PSTR("Portal: Enviado client().Stop. Fin de la página"));
+  sprintf_P(log, PSTR("Portal: Sended client().Stop. End of page"));
   addLog(LOG_LEVEL_DEBUG_MORE, log);
 }
 
@@ -501,7 +501,7 @@ if (sysCfg.nodeSendConfigInterval<60000){sysCfg.nodeSendConfigInterval=60000;}
   value = urldecode(server.arg("updtMqtt").c_str());
   sysCfg.updMqttConfigFromMQTT = atoi(value.c_str());
 
-  sysCfg.reboot_setup = 0;
+  sysCfg.nextStartInitPortal = 0;
   //TODO: creo que no hace falta sysCfg.cfg_holder = CFG_HOLDER;
   //TODO: creo que no hace falta sysCfg.saveFlag++;
   CFG_Save();

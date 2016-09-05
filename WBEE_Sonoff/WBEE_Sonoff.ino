@@ -15,9 +15,9 @@ ADC_MODE(ADC_VCC);
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 
   #if CON_SSL
-    #define FW_VER            "4.8 SSL"            //VERSION DEL FW
+    #define FW_VER            "4.9 SSL"            //VERSION DEL FW
   #else
-    #define FW_VER            "4.8"            //VERSION DEL FW
+    #define FW_VER            "4.9"            //VERSION DEL FW
   #endif
 
 #define LED               13               //El led que se va a utilizar para parpadear 13 sonoff, 16 amica
@@ -132,7 +132,7 @@ struct SYSCFG {                 //Almacena la configuración
   int8_t        updMqttConfigFromMQTT;
   int8_t        timezone;
   uint8_t       power;
-  uint8_t       reboot_setup;
+  uint8_t       nextStartInitPortal;
   double        nodeSendConfigInterval;
   double        nodeSendDataInterval ;
   double        nodeSendDataThreshold;
@@ -143,8 +143,8 @@ char            Hostname[32];          //TODO:Comprobar si hay que borrarlo
 boolean         estado = false;
 char            autoSSID_name[20] = "Wastbee";
 char            autoSSID_password[20] = "password";
-String          nodeMSG; //Mensaje a publicar en el log
-boolean         pendingNodeMSG = false; //indica si hay algún mensaje pendiente.
+//String          nodeMSG; //Mensaje a publicar en el log
+//boolean         pendingNodeMSG = false; //indica si hay algún mensaje pendiente.
 String          nodeValue;//Mensaje a publicar en el Topic
 boolean         pendingNodeValue = false; //Indica si hay algún mensaje pendiente
 long int        pulsado = 0; //Para medir el tiempo del bucle del botón
@@ -178,7 +178,7 @@ void        CFG_Print();
 void        connectMQTT();
 void        messageReceived(String topic, String payload, char * bytes, unsigned int length);
 boolean     configTopic (String topic, String payload);
-void        setNodeMSG (String msg);
+//void        setNodeMSG (String msg);
 int         getInterval (String payload);
 int         autoConnect (char const *apName, char const *apPassword);
 boolean     startConfigPortal(char const *apName, char const *apPassword);
@@ -200,12 +200,16 @@ boolean     captivePortal();
 void        sendConfigInfo();
 void        onMQTTMsg (String topic, String payload, char * bytes, unsigned int length);
 void        onShortPush();
+void        sendConfigParam (String topic, String payload);
+void        sendNodeLog (String msg);
+void        sendNodeValue (String topic, String payload);
+
 //**********PREDEFINICION DE FUNCIONES*************************
 
 //*******************CALLBACKS********************************
 void onMQTTMsg (String topic, String payload, char * bytes, unsigned int length) {
   char log[80];
-  sprintf_P(log, PSTR("MQTT: Recibido \"%s\" = %s"), topic.c_str(), payload.c_str());
+  sprintf_P(log, PSTR("MQTT: received \"%s\" = \"%s\""), topic.c_str(), payload.c_str());
   addLog(LOG_LEVEL_DEBUG, log);
     if (payload == "on") { //TODO: verificar que es el topic correcto
       estado = true;
@@ -223,14 +227,16 @@ void onMQTTMsg (String topic, String payload, char * bytes, unsigned int length)
 void onShortPush() {
   if (estado) {
     estado = false;
-    pendingNodeValue = true;
+//    sendNodeValue (String(sysCfg.MQTTTopic), nodeValue);
+    pendingNodeValue = true; //Se activa un semaforo para enviar el topic en el loop https://github.com/knolleary/pubsubclient/issues/99
     nodeValue = "off";
     digitalWrite(LED, HIGH);
   }
   else
   {
+//    sendNodeValue (String(sysCfg.MQTTTopic), nodeValue);
     estado = true;
-    pendingNodeValue = true;
+    pendingNodeValue = true; //Se activa un semaforo para enviar el topic en el loop https://github.com/knolleary/pubsubclient/issues/99
     nodeValue = "on";
     digitalWrite(LED, LOW);
   }
@@ -265,7 +271,7 @@ void loop() {
     if(millis() - lastConfigTime > sysCfg.nodeSendConfigInterval) {
       char log[80];
       lastConfigTime = millis();
-      sprintf_P(log, PSTR("MQTT: Enviada info de configuración"));
+      sprintf_P(log, PSTR("MQTT: Send configuration info"));
       addLog(LOG_LEVEL_INFO, log);
       sendConfigInfo();
       }
@@ -274,7 +280,7 @@ void loop() {
     if(millis() - lastDataTime > sysCfg.nodeSendDataInterval ) {
       char log[80];
       lastDataTime = millis();
-      sprintf_P(log, PSTR("MQTT: Enviado el Topic de datos"));
+      sprintf_P(log, PSTR("MQTT: Send data topic"));
       addLog(LOG_LEVEL_INFO, log);
       // Aqui lo que sea que envie los datos
       }
@@ -286,10 +292,11 @@ void loop() {
     attachInterrupt(BUTTON, pulsadoBoton, CHANGE);
   }
 
+
   //Escribe las actualizaciones pendientes de estado en el broker
   if (pendingNodeValue) {
     pendingNodeValue = false;
-    sprintf_P(log, PSTR("MQTT: Publicado \"%s\" = %s"), sysCfg.MQTTTopic, nodeValue.c_str());
+    sprintf_P(log, PSTR("MQTT: Published \"%s\" = \"%s\""), sysCfg.MQTTTopic, nodeValue.c_str());
     addLog(LOG_LEVEL_DEBUG, log);
     mqttClient.publish(sysCfg.MQTTTopic, nodeValue);
     mqttClient.loop();
@@ -297,15 +304,17 @@ void loop() {
   }
 
   //Escribe en el log de MQTT los mensajes pendientes
+/*
   if (pendingNodeMSG) {
     String topic = deviceTopic + String("LOG/nodeMSG/");
     //  Serial.println ("Topic: " + topic +"; Mensaje: " + nodeMSG);
-    sprintf_P(log, PSTR("MQTT: Publicado \"%s\" = %s"), topic.c_str(), nodeMSG.c_str());
+    sprintf_P(log, PSTR("MQTT: Published \"%s\" = %s"), topic.c_str(), nodeMSG.c_str());
     addLog(LOG_LEVEL_DEBUG, log);
     mqttClient.publish(topic, nodeMSG); //Publica el error en el $DEV
     mqttClient.loop();
     pendingNodeMSG = false;
   }
+*/
 }
 
 

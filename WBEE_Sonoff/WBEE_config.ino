@@ -89,7 +89,7 @@ void CFG_Default()
   sysCfg.updMqttConfigFromMQTT = UPD_MQTT_CFG_FROM_MQTT;
   sysCfg.timezone = APP_TIMEZONE;
   sysCfg.power = APP_POWER;
-  sysCfg.reboot_setup = 1;
+  sysCfg.nextStartInitPortal = 1;
   sysCfg.nodeSendConfigInterval = SEND_CONFIG_TIME;
   sysCfg.nodeSendDataInterval  = SEND_DATA_TIME;
   sysCfg.nodeSendDataThreshold = SEND_DATA_THRESHOLD;
@@ -149,37 +149,37 @@ void CFG_Erase()
 
 //TODO:En la version definitiva esto debe de borrarse y todas las referencias
 void CFG_Print()
-{
+{//TODO:grabar en la memoria estatica
   if (sysCfg.nodeSerialLogLevel) {
-  Serial.println("***************SYSCFG*************************");
-  Serial.print ("sysCfg.cfg_holder: "); Serial.println(sysCfg.cfg_holder);
-  Serial.print ("sysCfg.saveFlag: "); Serial.println(sysCfg.saveFlag);
-  Serial.print ("sysCfg.nodeSerialLogLevel: "); Serial.println(sysCfg.nodeSerialLogLevel);
-  Serial.print ("sysCfg.nodeSysLogLevel : "); Serial.println(sysCfg.nodeSysLogLevel );
-  Serial.print ("sysCfg.nodeSyslogHost: "); Serial.println(sysCfg.nodeSyslogHost);
-  Serial.print ("sysCfg.WifiSSID1: "); Serial.println(sysCfg.WifiSSID1);
-  Serial.print ("sysCfg.WifiPassword: "); Serial.println(sysCfg.WifiPassword);
-  Serial.print ("sysCfg.WifiSSID2: "); Serial.println(sysCfg.WifiSSID2);
-  Serial.print ("sysCfg.WifiPassword2: "); Serial.println(sysCfg.WifiPassword2);
-  Serial.print ("sysCfg.WifiSSID3: "); Serial.println(sysCfg.WifiSSID3);
-  Serial.print ("sysCfg.WifiPassword3: "); Serial.println(sysCfg.WifiPassword3);
-  Serial.print ("sysCfg.MQTTServer: "); Serial.println(sysCfg.MQTTServer);
-  Serial.print ("sysCfg.MQTTPort: "); Serial.println(sysCfg.MQTTPort);
-  Serial.print ("sysCfg.MQTTUser: "); Serial.println(sysCfg.MQTTUser);
-  Serial.print ("sysCfg.MQTTPassword: "); Serial.println(sysCfg.MQTTPassword);
-  Serial.print ("sysCfg.MQTTTopic: "); Serial.println(sysCfg.MQTTTopic);
-  Serial.print ("sysCfg.nodeName: "); Serial.println(sysCfg.nodeName);
-  Serial.print ("sysCfg.nodeType: "); Serial.println(sysCfg.nodeType);
-  Serial.print ("sysCfg.updWifiConfigFromMQTT: "); Serial.println(sysCfg.updWifiConfigFromMQTT);
-  Serial.print ("sysCfg.updMqttConfigFromMQTT: "); Serial.println(sysCfg.updMqttConfigFromMQTT);
-  Serial.print ("sysCfg.timezone: "); Serial.println(sysCfg.timezone);
-  Serial.print ("sysCfg.power: "); Serial.println(sysCfg.power);
-  Serial.print ("sysCfg.reboot_setup: "); Serial.println(sysCfg.reboot_setup);
-  Serial.print ("sysCfg.nodeSendConfigInterval: "); Serial.println(sysCfg.nodeSendConfigInterval);
-  Serial.print ("sysCfg.nodeSendDataInterval : "); Serial.println(sysCfg.nodeSendDataInterval );
-  Serial.print ("sysCfg.nodeSendDataThreshold: "); Serial.println(sysCfg.nodeSendDataThreshold);
-  Serial.print ("sysCfg.nodeSleepInterval: "); Serial.println(sysCfg.nodeSleepInterval);
-  Serial.println("***************SYSCFG*************************");
+  Serial.println(F("----------------------SYSCONFIG--------------------"));
+  Serial.print (F("cfg_holder: ")); Serial.println(sysCfg.cfg_holder);
+  Serial.print (F("saveFlag: ")); Serial.println(sysCfg.saveFlag);
+  Serial.print (F("nodeSerialLogLevel: ")); Serial.println(sysCfg.nodeSerialLogLevel);
+  Serial.print (F("nodeSysLogLevel : ")); Serial.println(sysCfg.nodeSysLogLevel );
+  Serial.print (F("nodeSyslogHost: ")); Serial.println(sysCfg.nodeSyslogHost);
+  Serial.print (F("WifiSSID1: ")); Serial.println(sysCfg.WifiSSID1);
+  Serial.print (F("WifiPassword: ")); Serial.println(sysCfg.WifiPassword);
+  Serial.print (F("WifiSSID2: ")); Serial.println(sysCfg.WifiSSID2);
+  Serial.print (F("WifiPassword2: ")); Serial.println(sysCfg.WifiPassword2);
+  Serial.print (F("WifiSSID3: ")); Serial.println(sysCfg.WifiSSID3);
+  Serial.print (F("WifiPassword3: ")); Serial.println(sysCfg.WifiPassword3);
+  Serial.print (F("MQTTServer: ")); Serial.println(sysCfg.MQTTServer);
+  Serial.print (F("MQTTPort: ")); Serial.println(sysCfg.MQTTPort);
+  Serial.print (F("MQTTUser: ")); Serial.println(sysCfg.MQTTUser);
+  Serial.print (F("MQTTPassword: ")); Serial.println(sysCfg.MQTTPassword);
+  Serial.print (F("MQTTTopic: ")); Serial.println(sysCfg.MQTTTopic);
+  Serial.print (F("nodeName: ")); Serial.println(sysCfg.nodeName);
+  Serial.print (F("nodeType: ")); Serial.println(sysCfg.nodeType);
+  Serial.print (F("updWifiConfigFromMQTT: ")); Serial.println(sysCfg.updWifiConfigFromMQTT);
+  Serial.print (F("updMqttConfigFromMQTT: ")); Serial.println(sysCfg.updMqttConfigFromMQTT);
+  Serial.print (F("timezone: ")); Serial.println(sysCfg.timezone);
+  Serial.print (F("power: ")); Serial.println(sysCfg.power);
+  Serial.print (F("nextStartInitPortal: ")); Serial.println(sysCfg.nextStartInitPortal);
+  Serial.print (F("nodeSendConfigInterval: ")); Serial.println(sysCfg.nodeSendConfigInterval);
+  Serial.print (F("nodeSendDataInterval : ")); Serial.println(sysCfg.nodeSendDataInterval );
+  Serial.print (F("nodeSendDataThreshold: ")); Serial.println(sysCfg.nodeSendDataThreshold);
+  Serial.print (F("nodeSleepInterval: ")); Serial.println(sysCfg.nodeSleepInterval);
+  Serial.println (F("***************SYSCFG*************************"));
   }
   else
   {

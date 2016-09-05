@@ -39,11 +39,11 @@ void pulsadoBoton() {
 
 void pulsaLarga() {
   //Se he hecho una pulsación larga del botón, para configurar
-  Serial.println(F("Pulsación larga"));
+  Serial.println(F("Long push"));
   //WB      WhatsBeeLib whatsbeeManager(LED, BUTTON);
   //WB      whatsbeeManager.resetSettings();
   ledBlink (0.1, 0.03);
-  sysCfg.reboot_setup = 1;
+  sysCfg.nextStartInitPortal = 1;
   CFG_Save();
   ESP.reset();
 }
@@ -74,8 +74,8 @@ void setupGadget() {
   deviceTopic = String("$DEV/") + String(sysCfg.MQTTUser) + String("/") + String(ESP.getChipId()) + String("/");
   autoSSID.toCharArray (autoSSID_name, 20);
 
-  if (sysCfg.reboot_setup) { //Se marcó para activar el portal en el proximo reset
-    sysCfg.reboot_setup = 0;
+  if (sysCfg.nextStartInitPortal) { //Se marcó para activar el portal en el proximo reset
+    sysCfg.nextStartInitPortal = 0;
     CFG_Save(); //así en el proximo reinicio volverá a arrancar sin portal
     startConfigPortal(autoSSID_name, autoSSID_password);
   }
@@ -94,13 +94,13 @@ void setupPortal() {
     wifiMulti.addAP(sysCfg.WifiSSID3, sysCfg.WifiPassword3);
   }
   if (!autoConnect(autoSSID_name, autoSSID_password)) {
-    Serial.println(F("fallo de conexión"));
+    Serial.println(F("Connection failure"));
     delay(3000);
     ESP.reset();    //reset and try again, or maybe put it to deep sleep
     delay(5000);
   }
   //Si has llegado aqui estás conectado a la Wifi
-  addLog(LOG_LEVEL_INFO, "Conectado!!! :)");
+  addLog(LOG_LEVEL_INFO, "Connected!!! :)");
 }
 
 
