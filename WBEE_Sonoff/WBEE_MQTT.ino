@@ -21,7 +21,17 @@ void connectMQTT() {
 
   mqttClient.subscribe(deviceTopic + String("+"));
   mqttClient.loop();  // Solve LmacRxBlk:1 messages
-  sprintf_P(log, PSTR("MQTT: suscribed to \"%s%s\""), deviceTopic.c_str(), "#");
+  sprintf_P(log, PSTR("MQTT: suscribed to \"%s%s\""), deviceTopic.c_str(), "+");
+  addLog(LOG_LEVEL_INFO, log);
+  
+  mqttClient.subscribe(deviceTopic + String("EPT/+")); //Se suscribe a los End Point Topics
+  mqttClient.loop();  // Solve LmacRxBlk:1 messages
+  sprintf_P(log, PSTR("MQTT: suscribed to \"%s%s\""), deviceTopic.c_str(), "EPT/+");
+  addLog(LOG_LEVEL_INFO, log);
+
+  mqttClient.subscribe(deviceTopic + String("CMD/+")); //Se suscribe a los Command Topics
+  mqttClient.loop();  // Solve LmacRxBlk:1 messages
+  sprintf_P(log, PSTR("MQTT: suscribed to \"%s%s\""), deviceTopic.c_str(), "CMD/+");
   addLog(LOG_LEVEL_INFO, log);
 
   mqttClient.subscribe(sysCfg.MQTTTopic);
@@ -36,199 +46,6 @@ void messageReceived(String topic, String payload, char * bytes, unsigned int le
     onMQTTMsg (topic, payload, bytes, length);
   }
 }
-
-//TODO: Mirar si vale la pena que solo se mande el mensaje si cambia el valor
-boolean configTopic (String topic, String payload) {
-  char log[80];
-  payload = payload.substring(0, 30); //limita el número de carácteres
-  if (topic.startsWith(deviceTopic, 0)) { //es un parámetro de configuración porque está por debajo del devicetopic
-    String param = topic;
-    int saveConfig=0;   //0->no hace nada, 1->Salva la config y manda el log, 2-> No guarda y devuelve log de no permisos
-    param.replace(deviceTopic, String(""));    //TODO: ver como gestionamos que el topic sea largo
-    sprintf_P(log, PSTR("MQTT: Config topic received \"%s\" = \"%s\""), topic.c_str(), payload.c_str());
-    addLog(LOG_LEVEL_DEBUG, log);
-
-    if (param == String("setsNodeName")) {
-      payload.toCharArray(sysCfg.nodeName, payload.length() + 1);
-      saveConfig=1;
-    }
-    else if (param == String("setgNodeType")) {
-      payload.toCharArray(sysCfg.nodeType, payload.length() + 1);
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSerialLogLevel")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSerialLogLevel = atoi(strVal);
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSysLogLevel")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSysLogLevel  = atoi(strVal);
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSyslogHost")) {
-      payload.toCharArray(sysCfg.nodeSyslogHost, payload.length() + 1);
-      saveConfig=1;
-    }
-    else if (param == String("nextStartInitPortal")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nextStartInitPortal = atoi(strVal);
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSendConfigInterval")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSendConfigInterval = atoi(strVal);
-      if (sysCfg.nodeSendConfigInterval<60000){sysCfg.nodeSendConfigInterval=60000;}
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSendDataInterval")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSendDataInterval  = atoi(strVal);
-      if (sysCfg.nodeSendDataInterval <1000){sysCfg.nodeSendDataInterval =1000;}
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSendDataThreshold")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSendDataThreshold = atoi(strVal);
-      if (sysCfg.nodeSendDataThreshold<0){sysCfg.nodeSendDataThreshold=0;}
-      saveConfig=1;
-    }
-    else if (param == String("setsNodeSleepInterval")) {
-      char strVal[4];
-      payload.toCharArray(strVal, payload.length() + 1);
-      sysCfg.nodeSleepInterval = atoi(strVal);
-      if (sysCfg.nodeSleepInterval<0){sysCfg.nodeSleepInterval=0;}
-      saveConfig=1;
-    }
-    else if (param == String("seteMQTTServer")) {
-        if (sysCfg.updMqttConfigFromMQTT){
-          payload.toCharArray(sysCfg.MQTTServer, payload.length() + 1);
-          saveConfig=1;
-        }
-        else{ saveConfig=2;}
-      }
-    else if (param == String("seteMQTTPort")) {
-        if (sysCfg.updMqttConfigFromMQTT){
-          payload.toCharArray(sysCfg.MQTTPort, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("seteMQTTUser")) {
-        if (sysCfg.updMqttConfigFromMQTT){
-          payload.toCharArray(sysCfg.MQTTUser, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("setpMQTTPassword")) {
-        if (sysCfg.updMqttConfigFromMQTT){
-          payload.toCharArray(sysCfg.MQTTPassword, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("seteMQTTTopic")) {
-        if (sysCfg.updMqttConfigFromMQTT){
-          payload.toCharArray(sysCfg.MQTTTopic, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("setsWifiSSID1")) {
-        if (sysCfg.updWifiConfigFromMQTT){
-          payload.toCharArray(sysCfg.WifiSSID1, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("setpWifiPassword1")) {
-        if (sysCfg.updWifiConfigFromMQTT){
-          payload.toCharArray(sysCfg.WifiPassword, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("setsWifiSSID2")) {
-        if (sysCfg.updWifiConfigFromMQTT){
-          payload.toCharArray(sysCfg.WifiSSID2, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("setpWifiPassword2")) {
-        if (sysCfg.updWifiConfigFromMQTT){
-          payload.toCharArray(sysCfg.WifiPassword2, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("setsWifiSSID3")) {
-        if (sysCfg.updWifiConfigFromMQTT){
-          payload.toCharArray(sysCfg.WifiSSID3, payload.length() + 1);
-          saveConfig=1;
-        }
-        else {saveConfig=2;}
-   }
-    else if (param == String("setpWifiPassword3") && sysCfg.updWifiConfigFromMQTT) {
-        if (sysCfg.updWifiConfigFromMQTT){
-            payload.toCharArray(sysCfg.WifiPassword3, payload.length() + 1);
-            saveConfig=1;
-        }
-        else {saveConfig=2;}
-    }
-    else if (param == String("cReset")) {
-      sendNodeLog(PSTR("COMMAND: Solicitado Reset por MQTT"));
-      ESP.reset();
-      return true;
-    }
-    else if (param == String("cPubConfig")) {
-      sendConfigInfo();
-      sendNodeLog (PSTR("COMMAND: Solicitada Configuración"));
-      return true;
-    }
-    else if (param == String("cResetPortal")) {
-      sendNodeLog (PSTR("COMMAND: Solicitado Reset con config"));
-      sysCfg.nextStartInitPortal = 1;
-      CFG_Save();
-      ESP.reset();
-      return true;
-    }
-
-    if (saveConfig==1){
-      saveConfig=0;
-      param.replace("set", String(""));
-      CFG_Save();
-      sprintf_P(log, PSTR("SUCCESS: Configured %s from broker."), param.c_str());
-      sendNodeLog (log);
-      sendConfigParam(param, payload); 
-      }
-    else if (saveConfig==2){
-      saveConfig=0;
-      sprintf_P(log, PSTR("ERROR: Configuring %s from broker. Insufficient permissions."), param.c_str());
-      sendNodeLog (log);
-      }
-    return true;
-  }
-  else {
-    return false;//Lo que ha llegado no es un parametro de config porque no está por debajo del config topic
-  }
-}
-
-/*
-void setNodeMSG (String msg) {
-  char log[80];
-  sprintf_P(log, PSTR("MQTT: Log-> %s"), msg.c_str());
-  addLog(LOG_LEVEL_DEBUG, log);
-  sendConfigParam ("LOG", msg);
-}
-*/
 
 int getInterval (String payload) {
   char toString[6];

@@ -15,12 +15,12 @@ ADC_MODE(ADC_VCC);
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 
   #if CON_SSL
-    #define FW_VER            "4.9 SSL"            //VERSION DEL FW
+    #define FW_VER            "5.3 SSL"            //VERSION DEL FW
   #else
-    #define FW_VER            "4.9"            //VERSION DEL FW
+    #define FW_VER            "5.3"            //VERSION DEL FW
   #endif
 
-#define LED               13               //El led que se va a utilizar para parpadear 13 sonoff, 16 amica
+#define LED               16               //El led que se va a utilizar para parpadear 13 sonoff, 16 amica
 #define BUTTON            0                //El botón que se utiliza para entrar en la config
 #define RELE              12               //El Relé
 #define INIT_PORTAL_TIME  4000             //Tiempo mínimo (ms) que se tiene que pulsar el botón para que inicie el ConfigPortal
@@ -203,6 +203,10 @@ void        onShortPush();
 void        sendConfigParam (String topic, String payload);
 void        sendNodeLog (String msg);
 void        sendNodeValue (String topic, String payload);
+void        callbackEndPointLed (String payload);
+void        callbackEndPointRele (String payload);
+void        callbackEndPointButton (String payload);
+
 
 //**********PREDEFINICION DE FUNCIONES*************************
 
@@ -241,6 +245,20 @@ void onShortPush() {
     digitalWrite(LED, LOW);
   }
 }
+//Callback de los endPoints (es una simulación en remoto de que se utilizan los recursos locales
+void callbackEndPointLed (String payload){
+  
+  }
+void callbackEndPointRele (String payload){}
+void callbackEndPointButton (String payload){
+  //Payload=1 pulsa corte, Payload=2 pulsa larga
+  if (payload==String("1")){
+    onShortPush();}
+  else   if (payload==String("2")){
+    pulsaLarga();}
+    
+  }
+
 //*******************CALLBACKS********************************
 
 void setup() {

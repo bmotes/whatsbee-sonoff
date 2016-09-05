@@ -137,7 +137,7 @@ void setupConfigPortal() {
   server.on("/wifisave", &handleWifiSave);
   server.on("/r", &handleReset);
   server.on("/update", HTTP_GET, &handleUpdateGet);//OTA
-  server.on("/update", HTTP_POST, &handleUpdatePost, handleUpload);//OTA
+  server.on("/update", HTTP_POST, &handleUpdatePost, &handleUpload);//OTA
   server.onNotFound (&handleNotFound);
   server.begin(); // Web server start
 
@@ -603,6 +603,7 @@ void handleUpdatePost() {//OTA
 
   server.sendContent_P(WB_END);
   server.client().stop();
+  ESP.reset();
 
 }
 
@@ -631,7 +632,7 @@ void handleUpload() {//OTA
   else if (upload.status == UPLOAD_FILE_END) {
     if (Update.end(true)) { //true to set the size to the current progress
       //if (_serial_output)
-      sprintf_P(log, PSTR("OTA: Update Success. Rebooting..."));
+      sprintf_P(log, PSTR("\nOTA: Update Success. \nRebooting..."));
       addLog(LOG_LEVEL_INFO, log);
       //Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
       endUpload = true;
