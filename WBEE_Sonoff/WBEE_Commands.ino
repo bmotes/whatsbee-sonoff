@@ -7,6 +7,8 @@ boolean configTopic (String topic, String payload) {
   if (topic.startsWith(deviceTopic, 0)) { //es un parámetro de configuración porque está por debajo del devicetopic
     if (topic.startsWith(deviceTopic + String("EPT/"), 0)) { //Es un endPoinTopic
       shortTopic.replace(deviceTopic + String("EPT/"), String(""));    //TODO: ver como gestionamos que el topic sea largo
+      sprintf_P(log, PSTR("MQTT: EndPoint topic received \"%s\" = \"%s\""), topic.c_str(), payload.c_str());
+      addLog(LOG_LEVEL_DEBUG, log);
       
       //LED
       //RELE
@@ -15,11 +17,12 @@ boolean configTopic (String topic, String payload) {
       Serial.print (topic);
       Serial.print (", ");
       Serial.println (payload);
+      return true;
     }
-    else { //No es un endPointTopic
+    else if (topic.startsWith(deviceTopic + String("CMD/"), 0)) { //Es un commandTopic
       int saveConfig=0;   //0->no hace nada, 1->Salva la config y manda el log, 2-> No guarda y devuelve log de no permisos
-      shortTopic.replace(deviceTopic, String(""));    //TODO: ver como gestionamos que el topic sea largo
-      sprintf_P(log, PSTR("MQTT: Config topic received \"%s\" = \"%s\""), topic.c_str(), payload.c_str());
+      shortTopic.replace(deviceTopic + String("CMD/"), String(""));    //TODO: ver como gestionamos que el topic sea largo
+      sprintf_P(log, PSTR("MQTT: Command topic received \"%s\" = \"%s\""), topic.c_str(), payload.c_str());
       addLog(LOG_LEVEL_DEBUG, log);
   
       if (shortTopic == String("setsNodeName")) {
@@ -174,6 +177,7 @@ boolean configTopic (String topic, String payload) {
         ESP.reset();
         return true;
       }
+ //*************************END POINTS****************************
       else if (shortTopic == String("cSetEndPointLed")) {
         sendNodeLog (PSTR("COMMAND: cambiado end point Led"));
         mqttClient.publish(deviceTopic + String("EPT/endPointLed"), payload);
@@ -195,7 +199,7 @@ boolean configTopic (String topic, String payload) {
         callbackEndPointButton (payload);
         return true;
       }
-      
+//***********************END POINTS************************************
   
       if (saveConfig==1){
         saveConfig=0;
@@ -211,9 +215,9 @@ boolean configTopic (String topic, String payload) {
         sendNodeLog (log);
         }
       return true;
-    }
+    } //Fin de es un commandTopic
   } //Era un configTopic
-  else {
+  else { //No es un configTopic
     return false;//Lo que ha llegado no es un parametro de config porque no está por debajo del config topic
   }
 }

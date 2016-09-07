@@ -19,9 +19,9 @@ void connectMQTT() {
   addLog(LOG_LEVEL_INFO, log);
   ledBlink (3, 0.05); //Señaliza la conexión correcta al servidor MQTT
 
-  mqttClient.subscribe(deviceTopic + String("+"));
+  mqttClient.subscribe(deviceTopic + String("CFG/+")); //Sr suscribe a los mensajes de config
   mqttClient.loop();  // Solve LmacRxBlk:1 messages
-  sprintf_P(log, PSTR("MQTT: suscribed to \"%s%s\""), deviceTopic.c_str(), "+");
+  sprintf_P(log, PSTR("MQTT: suscribed to \"%s%s\""), deviceTopic.c_str(), "CFG/+");
   addLog(LOG_LEVEL_INFO, log);
   
   mqttClient.subscribe(deviceTopic + String("EPT/+")); //Se suscribe a los End Point Topics
@@ -90,7 +90,7 @@ void sendConfigInfo(){
 
 void sendConfigParam(String topic, String payload)
   {//Envia un parámetro de configuración
-  mqttClient.publish(deviceTopic + topic, payload);
+  mqttClient.publish(deviceTopic + String("CFG/") + topic, payload);
   mqttClient.loop();
   }
 

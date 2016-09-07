@@ -11,13 +11,13 @@
 ADC_MODE(ADC_VCC);
 
 #define CON_SSL           true             //Compilar con TSL/SSL
-#define HW_VER            "SONOFF"         //VERSION DEL HW
+#define HW_VER            "SONOF"         //VERSION DEL HW
 #define CAPTIVE_PORTAL    false            //Se instala el DNS para elportal cautivo
 
   #if CON_SSL
-    #define FW_VER            "5.3 SSL"            //VERSION DEL FW
+    #define FW_VER            "5.5 SSL"            //VERSION DEL FW
   #else
-    #define FW_VER            "5.3"            //VERSION DEL FW
+    #define FW_VER            "5.5"            //VERSION DEL FW
   #endif
 
 #define LED               16               //El led que se va a utilizar para parpadear 13 sonoff, 16 amica
@@ -139,7 +139,7 @@ struct SYSCFG {                 //Almacena la configuración
   int           nodeSleepInterval;
 } sysCfg;
 
-char            Hostname[32];          //TODO:Comprobar si hay que borrarlo
+char            Hostname[16];          //Sirve para identificar el nodo en el LOG
 boolean         estado = false;
 char            autoSSID_name[20] = "Wastbee";
 char            autoSSID_password[20] = "password";
