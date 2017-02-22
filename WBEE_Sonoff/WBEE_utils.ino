@@ -57,7 +57,7 @@ if (pw==""){
 }
 //Obtiene el id único (la MAC sin los dos puntos)
 String getUniqueId(){
-  String macPuntos = String(WiFi.macAddress());
+  String macPuntos =  String(WiFi.macAddress());
   macPuntos.replace(String(":"), String(""));
   return macPuntos;
   }
@@ -212,11 +212,15 @@ int findText(String buscada, String cadena) {
   return foundpos;
 }
 
-void razonPortal (String razon){
+void razonPortal (String razon, int inicio){
     char log[80];
     razon.toCharArray(sysCfg.PortalReason, sizeof(sysCfg.PortalReason));
+    sysCfg.NextStartInitPortal = inicio;
     CFG_Save();
-    sprintf_P(log, PSTR("PORT: Razón inicio Portal: %s"), sysCfg.PortalReason);
+    sprintf_P(log, PSTR("PORT: Motivo->%s"), sysCfg.PortalReason);
     addLog(LOG_LEVEL_DEBUG, log);
+    if (inicio!=0){
+    ESP.reset();
+    }
 }
 

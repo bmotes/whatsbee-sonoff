@@ -38,20 +38,49 @@ void ledBlink (double intervaloParpadeo, double tiempoEncendido) {
   }
   initBlinkLedOn.detach();
 }
+// Determina el tipo de pulsacion
+void tipoPulsacion(){
+  char log[80];
+  if (tiempoPulsacion){                                   //Se ha pulsado el botón se hace una cosa o la otra en función de la duración
+      sprintf_P(log, PSTR("DEV: button pushed %lu ms"), tiempoPulsacion);
+      addLog(LOG_LEVEL_DEBUG_MORE, log);
+      if (tiempoPulsacion >PUSH_TIME_FOR_RESET_ALL){
+         tiempoPulsacion=0;
+         pulsaReset();
+      }
+      else {
+        if (tiempoPulsacion >PUSH_TIME_FOR_START_PORTAL){
+         tiempoPulsacion=0;
+         pulsaLarga();
+        }
+        else {
+          if (tiempoPulsacion <75){
+                tiempoPulsacion=0; //es un rebote del interruptor
+          }
+          else{
+            tiempoPulsacion=0;
+            onButtonPush();
+          }
+        }
+      }
+  }
+}
 // Interrupción de la pulsación del botón
-void pulsadoBoton() {         
+void pulsadoBoton() { 
+  Serial.print ("BORRAR:PulsadoBoton ");
+  Serial.println (digitalRead(BUTTON));        
   isInterrupt=true;
-  if (!digitalRead(BUTTON)){pulsado = millis();}                //se ha pulsado (está en 0)
-  else{tiempoPulsacion = millis()-pulsado;}                     //se ha soltado (esté en 1)
+  if (!digitalRead(BUTTON)){pulsado = millis();Serial.println ("BORRAR:Se ha pulsado");}                //se ha pulsado (está en 0)
+  else{tiempoPulsacion = millis()- pulsado;Serial.println ("BORRAR:Se ha soltado");}                     //se ha soltado (esté en 1)
   isInterrupt=false;
 }
 //Recibida pulsación larga, se abre el portal
 void pulsaLarga() {           
   ledBlink (0.1, 0.03);
-  razonPortal ("Solicitado pulsando el botón del dispositivo.");
-  sysCfg.NextStartInitPortal = 1;
-  CFG_Save();
-  ESP.reset();
+  razonPortal ("Solicitado pulsando el botón del dispositivo.", 1);
+  //BORRAR: sysCfg.NextStartInitPortal = 1;
+  //BORRAR: CFG_Save();
+//BORRAR:  ESP.reset();
 }
 //Recibida una pulsación muy larga, se resetea a su config por defecto
 void pulsaReset(){
@@ -129,12 +158,13 @@ void setupPins () {
 void setupGadget() {
   //CFG_Erase();//Solo para diagnóctico
   CFG_Load();
-  String AP_SSID = (String ("WhatsBee-") + getUniqueId());
+  String AP_SSID = (String ("WhatsBee-") + String(DEVICE_ID) + getUniqueId());
   String AP_PWD = (String (sysCfg.APPassword));
   AP_SSID.toCharArray (ApSsid, 30);
   AP_PWD.toCharArray (ApPassword, 30);
   deviceTopic = String("$DEV/") + String(sysCfg.MqttUser) + String("/") + getUniqueId() + String("/");
-  if (sysCfg.NextStartInitPortal ||((String(sysCfg.WifiSSID1)==String("")) && (String(sysCfg.WifiSSID2)==String("")) &&(String(sysCfg.WifiSSID3)==String("")))) { //Se marcó para activar el portal en el proximo reset
+  if (sysCfg.NextStartInitPortal!=0){// ||((String(sysCfg.WifiSSID1)==String("")) && (String(sysCfg.WifiSSID2)==String("")) &&(String(sysCfg.WifiSSID3)==String("")))) { //Se marcó para activar el portal en el proximo reset
+    Serial.println("BORRAR:está marcada para arrancar el portal");
     sysCfg.NextStartInitPortal = 0;
     CFG_Save(); //así en el proximo reinicio volverá a arrancar sin portal
     startConfigPortal(ApSsid, ApPassword);
@@ -163,28 +193,7 @@ void setupPortal() {
 //Loop principal
 void loop() {
   char log[80];
-  if (tiempoPulsacion){                                   //Se ha pulsado el botón se hace una cosa o la otra en función de la duración
-      if (tiempoPulsacion >PUSH_TIME_FOR_RESET_ALL){
-         tiempoPulsacion=0;
-         pulsaReset();
-      }
-      else {
-        if (tiempoPulsacion >PUSH_TIME_FOR_START_PORTAL){
-         tiempoPulsacion=0;
-         pulsaLarga();
-        }
-        else {
-          if (tiempoPulsacion <75){
-                tiempoPulsacion=0; //es un rebote del interruptor
-          }
-          else{
-            tiempoPulsacion=0;
-            onButtonPush();
-          }
-        }
-      }
-  }
-
+tipoPulsacion();                //Determina el tipo de pulsacion
 mqttClient.loop();
   delay(10);                    // <- fixes some issues with WiFi stability
   if (!mqttClient.connected()) {

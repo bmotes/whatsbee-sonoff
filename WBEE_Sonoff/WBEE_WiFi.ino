@@ -2,7 +2,7 @@
 int autoConnect (char const *apName, char const *apPassword) {
   if (wifiConnectCache()!= WL_CONNECTED){
     if (wifiConnectStored()!=WL_CONNECTED){
-      razonPortal ("Incorrect wifi user/password. WiFi.status = " + String (WiFi.status()));
+      razonPortal ("Incorrect wifi user/password. WiFi.status = " + String (WiFi.status()), 0);
       return startConfigPortal(apName, apPassword);
     }
   }
@@ -52,11 +52,13 @@ int wifiConnectCache () {
 char log[80];
   if (sysCfg.CachedWifi){
     wifiStart = millis();
-    WiFi.mode(WIFI_STA);
+//    WiFi.mode(WIFI_STA);
     WiFi.begin();
+    WiFi.mode(WIFI_STA);                                      //Se llama despues del begin para que no inicie el AP_STA https://github.com/esp8266/Arduino/issues/529
     sprintf_P(log, PSTR("\nWIFI: Conn attempt (cached)"));
     addLog(LOG_LEVEL_INFO, log);
     while ((WiFi.status() != WL_CONNECTED) && (millis() < (wifiStart + WIFI_CONNECT_CACHE_TIME))) { 
+      tipoPulsacion();//Para capturar la pulsacion de la interrupción
       delay(500);
       if (sysCfg.SerialLogLevel) {Serial.print("C");}
     }
@@ -82,6 +84,7 @@ int wifiConnectStored(){
     wifiMulti.run();
     wifiStart = millis();
     while ((wifiMulti.run() != WL_CONNECTED) && (millis() < (wifiStart + WIFI_CONNECT_STORED_TIME))) {  
+      tipoPulsacion();//Para capturar la pulsacion de la interrupción
       delay(500);
       if (sysCfg.SerialLogLevel) {Serial.print("W");}
     }

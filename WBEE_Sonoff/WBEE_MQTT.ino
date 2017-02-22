@@ -9,14 +9,15 @@ void connectMQTT() {
     addLog(LOG_LEVEL_DEBUG, log);
     if (sysCfg.SerialLogLevel) {Serial.print("M");}
     intentosConexionMQTT++;
+    tipoPulsacion();//Para capturar la pulsacion de la interrupción
     delay(500);
     if (intentosConexionMQTT > MQTT_CONN_RETRYS) {
-      razonPortal ("Datos de WhatsBee incorrectos (credenciales o nombre y puerto del servidor)");
       sprintf_P(log, PSTR("MQTT: > %d broker conns attempts, open portal"), MQTT_CONN_RETRYS);
       addLog(LOG_LEVEL_INFO, log);
-      sysCfg.NextStartInitPortal = 1; //TODO:Interceptar un error en las credenciales del MQTT
-      CFG_Save();
-      ESP.reset();
+      razonPortal ("Datos de WhatsBee incorrectos (credenciales o nombre y puerto del servidor)", 1);
+//BORRAR:      sysCfg.NextStartInitPortal = 1; //TODO:Interceptar un error en las credenciales del MQTT
+//BORRAR:      CFG_Save();
+//BORRAR:            ESP.reset();
     }
   }
   conMQTT=true;     //Indica al log que el servidor está disponible
@@ -257,12 +258,12 @@ boolean handleCommandTopic(String topic, String payload){
   else if (shortTopic == String("cmdPortal")) {
     saveConfig = hasPermissions (PERM_EXEC_CMD);
     if (saveConfig){
-      razonPortal ("Solicitado inicio del portal desde el servidor.");
       sprintf_P(log, PSTR("CMD: Start portal req"));
       addLog(LOG_LEVEL_INFO, log);
-      sysCfg.NextStartInitPortal = 1;
-      CFG_Save();
-      ESP.reset();
+      razonPortal ("Solicitado inicio del portal desde el servidor.", 1);
+//BORRAR:      sysCfg.NextStartInitPortal = 1;
+//BORRAR:      CFG_Save();
+//BORRAR:      ESP.reset();
       return true;
     }
   }

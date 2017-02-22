@@ -1,24 +1,34 @@
 //TODO: The keepalive interval is set to 15 seconds by default. This is configurable via MQTT_KEEPALIVE in PubSubClient.h.
 //TODO:he client uses MQTT 3.1.1 by default. It can be changed to use MQTT 3.1 by changing value of MQTT_VERSION in PubSubClient.h.
 //OJO, modificar en la librería el valor de #define MQTT_BUFFER_SIZE 512 de 128 a 512
+//V06.97 Cambios para adaptar el portal a la app de movil
 //V06.41 se introducen los end points en el loop (no pueden ir con interrupciones
 //V6.0 Se introduce comando para leer el sensor, también para que envie los end points
 //V5.6 Se resuelve problema de desconexión del rele
 //V5.5 Se introducen los end points y se resuelve problema con OTA
 //V4.1 Se añade el comando para pedir al nodo que mande la config.
 //V4.2 Se normalizan los comandos de configuración
+/*Device ids
+SO-> SONO2
+SW-> SWITCH
+AM-> AMICA
+LE-> LEVE2
+*/
+
+
 
 ADC_MODE(ADC_VCC);
 
 #define CON_SSL                     true              //Compilar con TSL/SSL
-#define HW_VER                      "SMTSW"           //VERSION DEL HW
+#define HW_VER                      "SONO2"           //VERSION DEL HW
+#define DEVICE_ID                   "SO"              //device Id para identificar en el SSID
 #define CAPTIVE_PORTAL              false             //Se instala el DNS para elportal cautivo
 
 #if CON_SSL
-  #define FW_VER                    "06.90 SSL"       //VERSION DEL FW Si está activado el SSL
+  #define FW_VER                    "06.97 SSL"       //VERSION DEL FW Si está activado el SSL
   #define MQTT_PORT                 "8883"            //El puerto si está activado el SSL
 #else
-  #define FW_VER                    "06.90"           //VERSION DEL FW Si no está activado el SSL
+  #define FW_VER                    "06.97"           //VERSION DEL FW Si no está activado el SSL
   #define MQTT_PORT                 "1883"            //EL puerto si está desactivado el SSL
 #endif
 
@@ -316,7 +326,8 @@ boolean     handleConfigTopic(String topic, String payload);
 boolean     handleEndPointTopic(String topic, String payload);
 boolean     handleCommandTopic(String topic, String payload);
 int         findText(String buscada, String cadena);
-void        razonPortal (String razon);
+void        razonPortal (String razon, int inicio);
+void        tipoPulsacion();
 
 /******CALLBACKS********/
 /*callback de recepción de mensaje (no incluidos los de config*/
@@ -346,16 +357,16 @@ void onButtonPush() {
   char log[80];
     if (estado) {
     estado = false;
-    sendNodeValue (String(sysCfg.MqttTopic), nodeValue);
     nodeValue = "off";
+    sendNodeValue (String(sysCfg.MqttTopic), nodeValue);
     ledOff();
     releOff();
   }
   else
   {
-    sendNodeValue (String(sysCfg.MqttTopic), nodeValue);
     estado = true;
     nodeValue = "on";
+    sendNodeValue (String(sysCfg.MqttTopic), nodeValue);
     ledOn();
     releOn();
   }
